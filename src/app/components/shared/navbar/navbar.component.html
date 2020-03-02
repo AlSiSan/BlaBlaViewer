@@ -1,0 +1,23 @@
+<nav class="navbar navbar-expand-md navbar-dark bg-dark" [ngClass]="status.isMap ? 'navbarMap' : {}">
+    <a class="navbar-brand" href="#">BlaBlaViewer</a>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto" (click)="changeTooglerNavbar()" (clickOutside)="changeTooglerNavbar()">
+            <li class="nav-item" routerLinkActive="active">
+                <a class="nav-link" [routerLink]="[ '/home' ]">Home</a>
+            </li>
+            <li class="nav-item" routerLinkActive="active">
+                <a class="nav-link" [routerLink]="[ '/viewer' ]">Visor</a>
+            </li>
+            <li class="nav-item" routerLinkActive="active">
+                <a class="nav-link" [routerLink]="[ '/about' ]">Acerca de</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="div">
+        <button id="navbar-toogler" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</nav>
