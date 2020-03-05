@@ -16,6 +16,16 @@ let apiKey = ['3MhgH4GyfQ0GUNDpse9rHoh8iewHexFk',
     'dNT9MRdmqkALT9istlck0SgAzzrsa87U'
 ];
 
+// europeBBox = turf.polygon([
+//     [
+//         [-17.508834, 35.568447],
+//         [-17.508834, 71.337567],
+//         [42.608354, 71.337567],
+//         [42.608354, 35.568447],
+//         [-17.508834, 35.568447]
+//     ]
+// ]);
+
 /*
 q: string - Criterio de busqueda
 */
@@ -27,19 +37,26 @@ let geoCodeData = (criteria, apiIndex) => {
         currentReqs++;
         let url = new URL("https://open.mapquestapi.com/nominatim/v1/search.php"),
             params = {
-                q: criteria,
+                q: `${criteria}`,
                 format: 'json',
-                key: apiKey[apiIndex]
+                key: apiKey[apiIndex],
+                viewbox: '-17.508834, 35.568447, 42.608354, 71.337567',
+                countrycodes: 'ES,PT,FR'
             }
         Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
         return fetch(url.href).then((res) => {
             return res.json();
         }).then((res) => {
-            // Se crea una feature de tipo punto en formato geojson y se guarda en una lista de features
-            let lon = res && res[0] && res[0].lon ? parseFloat(res[0].lon) : 0;
-            let lat = res && res[0] && res[0].lon ? parseFloat(res[0].lat) : 0;
-            let feature = turf.feature(turf.point([lon, lat]).geometry, { id: criteria.split(' ').join('-'), 'municipality': criteria });
-            featuresList.push(feature);
+            if (res && res[0]) {
+                res.some(function(resItem, index, _res) {
+                    if (resItem.type && resItem.type == 'administrative' && resItem.lon && resItem.lat) {
+                        let point = turf.point([parseFloat(resItem.lon), parseFloat(resItem.lat)])
+                        let feature = turf.feature(point.geometry, { id: criteria.split(' ').join('-'), 'municipality': criteria });
+                        featuresList.push(feature);
+                        return resItem.type == 'administrative';
+                    }
+                });
+            }
             return;
         }).catch((err) => {
             console.log(err)

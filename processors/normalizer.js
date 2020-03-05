@@ -29,7 +29,7 @@ let processUnicodeString = (unicodeString) => {
 
 //Comienza a escribirse el resultado
 writer = fs.createWriteStream('DATOS_BLABLACAR_norm1.txt');
-writer.write('"DIA"|"PAIS"|"ORIGEN"|"DESTINO"|"IMP_KM"|"ASIENTOS_OFERTADOS"|"ASIENTOS_CONFIRMADOS"|"VIAJES_OFERTADOS"|"VIAJES_CONFIRMADOS"|"OFERTANTES"|"OFERTANTES_NUEVOS"')
+writer.write('"DIA"|"PAIS"|"ORIGEN"|"DESTINO"|"IMP_KM"|"ASIENTOS_OFERTADOS"|"ASIENTOS_CONFIRMADOS"|"VIAJES_OFERTADOS"|"VIAJES_CONFIRMADOS"|"OFERTANTES"|"OFERTANTES_NUEVOS"\n')
 
 //Comienza la lectura del fichero original
 fs.createReadStream('DATOS_BLABLACAR.txt')
