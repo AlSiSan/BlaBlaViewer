@@ -1,0 +1,35 @@
+<div class="wrapper">
+    <div class="row">
+        <div>
+            <nav id="sidebar" class="bg-dark active">
+                <ul class="list-unstyled components">
+                    <li>
+                        <button class="btn text-white m-1" (click)="changeTooglerSidebar('layers')">
+                            <i class="fa fa-list"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="btn text-white m-1" (click)="changeTooglerSidebar('search')">
+                            <i class="fa fa-search"></i>
+                        </button>
+
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <div id="sidebarData" class="bg-dark active" [ngSwitch]="currentType">
+            <div *ngSwitchCase="'layers'">
+                <app-layers-manager></app-layers-manager>
+            </div>
+            <p *ngSwitchCase="'info'">
+
+            </p>
+            <div *ngSwitchCase="'search'">
+                <app-search></app-search>
+            </div>
+            <p *ngSwitchDefault>
+
+            </p>
+        </div>
+    </div>
+</div>

@@ -7,6 +7,11 @@ import { NavbarComponent } from './components/shared/navbar/navbar.component';
 import { HomeComponent } from './components/home/home.component';
 import { MapViewerComponent } from './components/map-viewer/map-viewer.component';
 import { AboutComponent } from './components/about/about.component';
+import { MapSidebarComponent } from './components/map-viewer/map-sidebar/map-sidebar.component';
+import { MapBottombarComponent } from './components/map-viewer/map-bottombar/map-bottombar.component';
+import { MapRsidebarComponent } from './components/map-viewer/map-rsidebar/map-rsidebar.component';
+import { LayersManagerComponent } from './components/map-viewer/layers-manager/layers-manager.component';
+import { SearchComponent } from './components/map-viewer/search/search/search.component';
 
 @NgModule({
   declarations: [
@@ -14,7 +19,12 @@ import { AboutComponent } from './components/about/about.component';
     NavbarComponent,
     HomeComponent,
     MapViewerComponent,
-    AboutComponent
+    AboutComponent,
+    MapSidebarComponent,
+    MapBottombarComponent,
+    MapRsidebarComponent,
+    LayersManagerComponent,
+    SearchComponent
   ],
   imports: [
     BrowserModule,
