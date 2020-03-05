@@ -23,7 +23,7 @@
         "@angular/platform-browser-dynamic": "~8.0.1",
         "@angular/router": "~8.0.1",
         "@turf/turf": "^5.1.6",
-        "@types/openlayers": "^4.6.17",
+        "@types/ol": "^6.1.0",
         "csv-parser": "^2.3.2",
         "express": "^4.17.1",
         "font-awesome": "^4.7.0",
