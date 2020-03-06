@@ -32,6 +32,8 @@ export class GenMap extends OlMap {
         polygons: {}
     };
 
+    wmsLegends = '';
+
     constructor( opt? ) {
         super({
             target: 'map',
@@ -108,6 +110,13 @@ export class GenMap extends OlMap {
             ]
         });
 
+
+        this.loadPopulation();
+
+    }
+
+    getLegend() {
+        return this.wmsLegends;
     }
 
     setLayerSwitcher( ) {
@@ -117,6 +126,32 @@ export class GenMap extends OlMap {
 
     getBboxMap = () => {
         return this.getView().calculateExtent(this.getSize());
+    }
+
+    loadPopulation() {
+        let tileWMSSource = new TileWMS({
+            params: {
+                LAYERS: 'gpw-v4:gpw-v4-population-density_2020',
+                TILED: true,
+                tilesorigin: this.getBboxMap()[0] + ',' + this.getBboxMap()[1]},
+            url: 'https://sedac.ciesin.columbia.edu/geoserver/ows?SERVICE=WMS&'
+        });
+        const ly = new GenTileLayer({
+            name: 'PopDens',
+            title: 'Densidad Población - 2020',
+            source: tileWMSSource,
+            visible: false,
+            zIndex: 2
+        });
+        this.wmsLegends = tileWMSSource.getLegendUrl(this.getView().getResolution());
+        console.log(this.wmsLegends);
+        ly.setOpacity(0.3);
+
+        for (let element of this.getLayers()['array_']) {
+            if (element.values_.title === 'Overlays') {
+                element.values_.layers.array_.push(ly);
+            }
+        }
     }
 
 }

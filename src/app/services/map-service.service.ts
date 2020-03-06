@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { GenMap } from '../models/gen-map';
 import { globalConfig } from '../modules/globalconfig/globalconfig.module';
 import { transform } from 'ol/proj';
@@ -22,7 +23,7 @@ export class MapServiceService {
 
   public selectionData = new Subject<any>();
 
-  constructor( ) { }
+  constructor( private http: HttpClient ) { }
   
 
   generateMap() {
@@ -56,6 +57,23 @@ export class MapServiceService {
 
   setLayerSwitcher( ) {
     this.getMap().setLayerSwitcher();
+  }
+
+  geocodeLocation( criteria ) {
+    this.http.get('https://open.mapquestapi.com/nominatim/v1/search.php', {
+      params: {
+        key: globalConfig.mapquestApiKey,
+        format: 'json',
+        q: criteria
+      }
+    })
+      .subscribe((data) => {
+        let place = data[0];
+        const mapSize = this.map.getSize();
+        const locationCoords = transform([place.lon, place.lat], 'EPSG:4326', 'EPSG:3857');
+        this.map.getView().centerOn(locationCoords, this.map.getSize(), [mapSize[0] / 2, mapSize[1] / 2]);
+        this.map.getView().setZoom(12);
+      });
   }
 
 }

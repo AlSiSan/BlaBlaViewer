@@ -9,15 +9,18 @@ import { MapServiceService } from 'src/app/services/map-service.service';
 })
 export class MapViewerComponent implements OnInit, OnDestroy {
 
-  constructor( private router: Router,
-               private mapService: MapServiceService) { }
+  constructor( private router: Router, private mapService: MapServiceService) { }
 
-               ngOnInit() {
-                this.mapService.generateMap().setTarget('viewerCompanySpider');
-              }
-            
-              ngOnDestroy(): void {
-                this.mapService.restoreInitialView();
-              }
+  ngOnInit() {
+    this.mapService.generateMap().setTarget('viewerBlablaviewer');
+  }
+
+  ngOnDestroy(): void {
+    this.mapService.restoreInitialView();
+  }
+
+  getMapLegend() {
+    return this.mapService.getMap().getLegend();
+  }
 
 }

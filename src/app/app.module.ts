@@ -12,6 +12,7 @@ import { MapBottombarComponent } from './components/map-viewer/map-bottombar/map
 import { MapRsidebarComponent } from './components/map-viewer/map-rsidebar/map-rsidebar.component';
 import { LayersManagerComponent } from './components/map-viewer/layers-manager/layers-manager.component';
 import { SearchComponent } from './components/map-viewer/search/search/search.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { SearchComponent } from './components/map-viewer/search/search/search.co
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]
