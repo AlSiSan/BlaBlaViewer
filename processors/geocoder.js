@@ -41,7 +41,7 @@ let geoCodeData = (criteria, apiIndex) => {
                 format: 'json',
                 key: apiKey[apiIndex],
                 viewbox: '-17.508834, 35.568447, 42.608354, 71.337567',
-                countrycodes: 'ES,PT,FR'
+                countrycodes: 'ES,PT'
             }
         Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
         return fetch(url.href).then((res) => {
@@ -49,7 +49,7 @@ let geoCodeData = (criteria, apiIndex) => {
         }).then((res) => {
             if (res && res[0]) {
                 res.some(function(resItem, index, _res) {
-                    if (resItem.type && resItem.type == 'administrative' && resItem.lon && resItem.lat) {
+                    if (resItem.type && (resItem.type == 'administrative' || resItem.type == 'city') && resItem.lon && resItem.lat) {
                         let point = turf.point([parseFloat(resItem.lon), parseFloat(resItem.lat)])
                         let feature = turf.feature(point.geometry, { id: criteria.split(' ').join('-'), 'municipality': criteria });
                         featuresList.push(feature);
