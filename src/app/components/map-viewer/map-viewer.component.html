@@ -1,5 +1,8 @@
-<div id="viewerSidebar">
+<div id="viewerSidebar" [ngStyle]="{'bottom': viewerBottom}">
     <app-map-sidebar></app-map-sidebar>
 </div>
-<div id="viewerBlablaviewer"></div>
+<div id="viewerBottombar">
+    <app-map-bottombar></app-map-bottombar>
+</div>
+<div id="viewerBlablaviewer" [ngStyle]="{'bottom': viewerBottom}"></div>
 <!-- <img id="legend" [src]="getMapLegend()"> -->

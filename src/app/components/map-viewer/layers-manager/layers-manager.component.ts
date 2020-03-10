@@ -14,8 +14,10 @@ export class LayersManagerComponent implements OnInit, OnDestroy {
 
     this.mapService.setLayerSwitcher();
 
+    // let elementLS = document.getElementsByClassName('ol-layerswitcher')[0];
     let elementLS = document.getElementsByClassName('layer-switcher')[0];
     document.getElementById('layersListManager').appendChild(elementLS);
+
   }
 
   ngOnDestroy(): void {

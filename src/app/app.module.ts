@@ -13,6 +13,7 @@ import { MapRsidebarComponent } from './components/map-viewer/map-rsidebar/map-r
 import { LayersManagerComponent } from './components/map-viewer/layers-manager/layers-manager.component';
 import { SearchComponent } from './components/map-viewer/search/search/search.component';
 import { HttpClientModule } from '@angular/common/http';
+import { DataOptionsComponent } from './components/map-viewer/data-options/data-options.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { HttpClientModule } from '@angular/common/http';
     MapBottombarComponent,
     MapRsidebarComponent,
     LayersManagerComponent,
-    SearchComponent
+    SearchComponent,
+    DataOptionsComponent
   ],
   imports: [
     BrowserModule,

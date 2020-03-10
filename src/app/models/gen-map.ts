@@ -18,6 +18,8 @@ import Projection from 'ol/proj/Projection';
 import { GenLayerGroup, GenTileLayer, GenVectorLayer, GenVectorTileLayer } from './customLayers/gen-layers';
 
 import LayerSwitcher from 'ol-layerswitcher';
+// import LayerSwitcher from 'ol-ext/control/LayerSwitcher';
+// import Timeline from 'ol-ext/control/Timeline';
 
 import * as turf from '@turf/turf';
 
@@ -110,7 +112,6 @@ export class GenMap extends OlMap {
             ]
         });
 
-
         this.loadPopulation();
 
     }
@@ -144,7 +145,6 @@ export class GenMap extends OlMap {
             zIndex: 2
         });
         this.wmsLegends = tileWMSSource.getLegendUrl(this.getView().getResolution());
-        console.log(this.wmsLegends);
         ly.setOpacity(0.3);
 
         for (let element of this.getLayers()['array_']) {
