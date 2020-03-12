@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-map-bottombar',
@@ -10,7 +10,7 @@ export class MapBottombarComponent implements OnInit {
   constructor( ) { }
 
   ngOnInit() {
-    
+
   }
 
 }
