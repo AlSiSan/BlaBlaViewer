@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-data-options',
@@ -10,6 +11,10 @@ export class DataOptionsComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+  }
+
+  applyFilters(filters: NgForm) {
+    console.log(filters.control.value);
   }
 
 }

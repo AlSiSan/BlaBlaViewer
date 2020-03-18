@@ -1,1 +1,14 @@
-<p>data-options works!</p>
+<h3 class="text-white text-center my-4"> Selección de datos </h3>
+
+<form #filtersForm="ngForm" class="container align-items-center" (ngSubmit)="applyFilters(filtersForm)">
+    <div class="form-group my-2">
+        <label class="text-white" for="query-from">Desde:</label>
+        <input name="query-from" [ngModel]="'2017-11-01'" class="form-control" type="date" id="query-from" min="2017-11-01" max="2019-10-31">
+    </div>
+    <div class="form-group my-2">
+        <label class="text-white" for="query-to">Hasta:</label>
+        <input name="query-to" [ngModel]="'2018-02-28'" class="form-control" type="date" id="query-to" min="2017-11-01" max="2019-10-31">
+    </div>
+
+    <button class="btn btn-outline-light m-2" type="submit"><i class="fa fa-check fa-fw"></i> Aplicar</button>
+</form>

@@ -15,7 +15,7 @@
                     </li>
                     <li>
                         <button class="btn text-white m-1" (click)="changeTooglerSidebar('adjust')">
-                            <i class="fa fa-adjust"></i>
+                            <i class="fa fa-filter"></i>
                         </button>
                     </li>
                 </ul>
@@ -32,7 +32,7 @@
                 <app-search></app-search>
             </div>
             <div *ngSwitchCase="'adjust'">
-                <app-search></app-search>
+                <app-data-options></app-data-options>
             </div>
             <p *ngSwitchDefault>
 

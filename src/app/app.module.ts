@@ -14,6 +14,7 @@ import { LayersManagerComponent } from './components/map-viewer/layers-manager/l
 import { SearchComponent } from './components/map-viewer/search/search/search.component';
 import { HttpClientModule } from '@angular/common/http';
 import { DataOptionsComponent } from './components/map-viewer/data-options/data-options.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { DataOptionsComponent } from './components/map-viewer/data-options/data-
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
