@@ -11,11 +11,12 @@
     min-width: 50px;
     max-width: 50px;
     transition: all 0.3s;
-    height: 100%;
     width: 100%;
     position: fixed;
     z-index: 0;
+    top: 50px;
     left: 0;
+    bottom: 200px;
     overflow-x: hidden;
 }
 
@@ -23,10 +24,11 @@
     min-width: 150px;
     max-width: 450px;
     transition: all 0.3s;
-    height: 100%;
     width: 100%;
     position: fixed;
     margin-left: 50px;
+    top: 55px;
+    bottom: 200px;
     z-index: 0;
     left: 0;
     overflow-x: hidden;
@@ -169,6 +171,7 @@ a.article:hover {
     padding: 20px;
     min-height: 100vh;
     transition: all 0.3s;
+    bottom: 200px;
 }
 
 
@@ -184,6 +187,8 @@ a.article:hover {
         transition: all 0.3s;
         height: 100%;
         width: 100%;
+        top: 50px;
+        bottom: 200px;
         position: fixed;
         margin-left: 50px !important;
         z-index: 0;
@@ -194,6 +199,8 @@ a.article:hover {
     #sidebar {
         min-width: 50px;
         max-width: 50px !important;
+        top: 50px;
+        bottom: 200px;
     }
     /* .dropdown-toggle::after {
         top: auto;

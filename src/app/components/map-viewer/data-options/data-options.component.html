@@ -1,14 +1,47 @@
 <h3 class="text-white text-center my-4"> Selección de datos </h3>
 
-<form #filtersForm="ngForm" class="container align-items-center" (ngSubmit)="applyFilters(filtersForm)">
+<form #filtersForm="ngForm" class="container align-items-center" (ngSubmit)="applyFilters()">
+    <div class="d-flex flex-column align-items-end">
+        <button class="btn btn-outline-light m-2 align-items-end" type="submit"><i class="fa fa-check fa-fw"></i> Aplicar</button>
+    </div>
+
     <div class="form-group my-2">
         <label class="text-white" for="query-from">Desde:</label>
-        <input name="query-from" [ngModel]="'2017-11-01'" class="form-control" type="date" id="query-from" min="2017-11-01" max="2019-10-31">
+        <input #dateFrom name="query-from" [ngModel]="comm.filterOptions.dateFrom" (ngModelChange)="comm.filterOptions.dateFrom=dateFrom.value" class="form-control" type="date" id="query-from" min="2017-11-01" max="2019-10-31">
     </div>
     <div class="form-group my-2">
         <label class="text-white" for="query-to">Hasta:</label>
-        <input name="query-to" [ngModel]="'2018-02-28'" class="form-control" type="date" id="query-to" min="2017-11-01" max="2019-10-31">
+        <input #dateTo name="query-to" [ngModel]="comm.filterOptions.dateTo" (ngModelChange)="comm.filterOptions.dateTo=dateTo.value" class="form-control" type="date" id="query-to" min="2017-11-01" max="2019-10-31">
+    </div>
+    <div class="form-group my-2">
+        <label class="text-white" for="query-to">País origen:</label>
+        <select #countryFrom name="country-origin" [ngModel]="comm.filterOptions.countryFrom" (ngModelChange)="comm.filterOptions.countryFrom=countryFrom.value" class="custom-select">
+            <option value="''"></option>
+            <option value="ES">España</option>
+            <option value="PT">Portugal</option>
+        </select>
+    </div>
+    <div class="form-group my-2">
+        <label class="text-white" for="query-to">País destino:</label>
+        <select #countryTo name="country-destination" [ngModel]="comm.filterOptions.countryTo" (ngModelChange)="comm.filterOptions.countryTo=countryTo.value" class="custom-select">
+            <option value="''"></option>
+            <option value="ES">España</option>
+            <option value="PT">Portugal</option>
+        </select>
+    </div>
+    <div class="form-group my-2">
+        <label class="text-white" for="query-to">Provincia origen:</label>
+        <select #provinceFrom name="province-origin" [ngModel]="comm.filterOptions.provinceFrom" (ngModelChange)="comm.filterOptions.provinceFrom=provinceFrom.value" class="custom-select">
+            <option value="''"></option>
+            <option *ngFor="let prov of getProvsOrigin()" value="{{prov}}">{{prov}}</option>
+        </select>
+    </div>
+    <div class="form-group my-2">
+        <label class="text-white" for="query-to">Provincia destino:</label>
+        <select #provinceTo name="province-destination" [ngModel]="comm.filterOptions.provinceTo" (ngModelChange)="comm.filterOptions.provinceTo=provinceTo.value" class="custom-select">
+            <option value="''"></option>
+            <option *ngFor="let prov of getProvsDestination()" value="{{prov}}">{{prov}}</option>
+        </select>
     </div>
 
-    <button class="btn btn-outline-light m-2" type="submit"><i class="fa fa-check fa-fw"></i> Aplicar</button>
 </form>
