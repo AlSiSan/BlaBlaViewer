@@ -10,7 +10,7 @@ export class CommunicationService {
 
   filterOptions = {
     dateFrom: '2017-11-11',
-    dateTo: '2017-11-12',
+    monthsNum: '2',
     countryFrom: '',
     countryTo: '',
     provinceFrom: '',
