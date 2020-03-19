@@ -17,14 +17,14 @@ export class MapServiceService {
 
   private map: GenMap;
   private opt = {};
-  
+
   private hoverSelect = null;
   private hoverLayer = undefined;
 
   public selectionData = new Subject<any>();
 
   constructor( private http: HttpClient ) { }
-  
+
 
   generateMap() {
     if (this.opt['view'] === undefined) {
@@ -68,7 +68,7 @@ export class MapServiceService {
       }
     })
       .subscribe((data) => {
-        let place = data[0];
+        const place = data[0];
         const mapSize = this.map.getSize();
         const locationCoords = transform([place.lon, place.lat], 'EPSG:4326', 'EPSG:3857');
         this.map.getView().centerOn(locationCoords, this.map.getSize(), [mapSize[0] / 2, mapSize[1] / 2]);

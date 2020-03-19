@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { CommunicationService } from '../../../services/communication.service';
 
@@ -9,13 +9,15 @@ import { CommunicationService } from '../../../services/communication.service';
 })
 export class DataOptionsComponent implements OnInit {
 
+  @Output() filtersUpdated = new EventEmitter();
+
   constructor( public comm: CommunicationService ) { }
 
   ngOnInit() {
   }
 
   applyFilters() {
-    console.log('reload data');
+    this.filtersUpdated.emit();
   }
 
   getProvsOrigin() {

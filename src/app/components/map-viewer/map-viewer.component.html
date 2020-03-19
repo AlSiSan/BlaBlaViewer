@@ -1,5 +1,5 @@
 <div id="viewerSidebar" [ngStyle]="{'bottom': viewerBottom}">
-    <app-map-sidebar></app-map-sidebar>
+    <app-map-sidebar (filtersUpdated)="reloadMap()"></app-map-sidebar>
 </div>
 <div id="viewerBottombar">
     <app-map-bottombar></app-map-bottombar>

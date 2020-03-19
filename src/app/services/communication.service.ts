@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { globalConfig } from '../modules/globalconfig/globalconfig.module';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -8,8 +9,8 @@ import { globalConfig } from '../modules/globalconfig/globalconfig.module';
 export class CommunicationService {
 
   filterOptions = {
-    dateFrom: '2017-11-01',
-    dateTo: '2018-02-28',
+    dateFrom: '2017-11-11',
+    dateTo: '2017-11-12',
     countryFrom: '',
     countryTo: '',
     provinceFrom: '',
@@ -18,6 +19,7 @@ export class CommunicationService {
 
   filterProvincesOrigin = [];
   filterProvincesDestination = [];
+  journeys = [];
 
   constructor( private http: HttpClient ) {
     http.get(`${globalConfig.serverUrl}/getProvincesOrigin`)
@@ -30,4 +32,13 @@ export class CommunicationService {
         this.filterProvincesDestination = provs;
       });
   }
+
+  getJourneysData() {
+    return this.http.get(`${globalConfig.serverUrl}/getJourneys`, { params: this.filterOptions })
+      .pipe(map((journeys: []) => {
+        this.journeys = journeys;
+        return journeys;
+      }));
+  }
+
 }

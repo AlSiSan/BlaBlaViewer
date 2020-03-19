@@ -32,7 +32,7 @@
                 <app-search></app-search>
             </div>
             <div *ngSwitchCase="'adjust'">
-                <app-data-options></app-data-options>
+                <app-data-options (filtersUpdated)="onFiltersUpdated()"></app-data-options>
             </div>
             <p *ngSwitchDefault>
 

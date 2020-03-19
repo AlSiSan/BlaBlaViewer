@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, ElementRef, HostListener, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-map-sidebar',
@@ -9,6 +9,9 @@ export class MapSidebarComponent implements OnInit {
 
   currentType = '';
   defaultClass: string;
+
+  @Output() filtersUpdated = new EventEmitter();
+
   constructor( private eRef: ElementRef ) { }
 
   ngOnInit() {
@@ -35,6 +38,10 @@ export class MapSidebarComponent implements OnInit {
     } else {
       this.currentType = type;
     }
+  }
+
+  onFiltersUpdated() {
+    this.filtersUpdated.emit();
   }
 
 }
