@@ -2,15 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { globalConfig } from '../modules/globalconfig/globalconfig.module';
 import { map } from 'rxjs/operators';
+import DataFrame, { Row } from 'dataframe-js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CommunicationService {
 
+  loading = true;
+  graphicsShown = false;
+
   filterOptions = {
-    dateFrom: '2017-11-11',
-    monthsNum: '2',
+    dateFrom: '2017-11-01',
+    monthsNum: '1',
     countryFrom: '',
     countryTo: '',
     provinceFrom: '',
@@ -19,7 +23,11 @@ export class CommunicationService {
 
   filterProvincesOrigin = [];
   filterProvincesDestination = [];
-  journeys = [];
+
+  journeysDf: DataFrame;
+  totalJourneys = 0;
+  totalDays = 0;
+  totalJourneysPerDay = 0;
 
   constructor( private http: HttpClient ) {
     http.get(`${globalConfig.serverUrl}/getProvincesOrigin`)
@@ -34,11 +42,40 @@ export class CommunicationService {
   }
 
   getJourneysData() {
+    this.loading = true;
     return this.http.get(`${globalConfig.serverUrl}/getJourneys`, { params: this.filterOptions })
-      .pipe(map((journeys: []) => {
-        this.journeys = journeys;
+      .pipe(map((journeys) => {
+        // this.journeys = journeys;
+        this.journeysDf = new DataFrame(journeys);
+        this.totalJourneys = this.journeysDf.count();
+
+        // Grouping by Days
+        const groupedDF = this.journeysDf.groupBy('DIA').aggregate(group => group.count()).rename('aggregation', 'groupCount');
+        this.totalJourneysPerDay = groupedDF.stat.mean('groupCount').toFixed(2);
+        this.totalDays = groupedDF.count();
+
+        // console.log(groupedDF.toCollection());
+        // console.log(groupedDF.toCollection()[0].groupKey.DIA.substring(0, 10));
+        // console.log(groupedDF.toCollection()[0].group.count());
+        this.loading = false;
         return journeys;
       }));
+  }
+
+  loadFinished() {
+    return !this.loading;
+  }
+
+  getTotalJourneys() {
+    return this.totalJourneys;
+  }
+
+  getTotalJourneysPerDay() {
+    return this.totalJourneysPerDay;
+  }
+
+  getTotalDays() {
+    return this.totalDays;
   }
 
 }

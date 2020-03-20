@@ -17,12 +17,16 @@ export class MapViewerComponent implements OnInit, OnDestroy {
     this.viewerBottom = '200px';
     this.comm.getJourneysData()
       .subscribe((res) => {
-        console.log(res);
+        // console.log(res);
       });
    }
 
   ngOnInit() {
     this.mapService.generateMap().setTarget('viewerBlablaviewer');
+  }
+
+  graphicsShown() {
+    return this.comm.graphicsShown;
   }
 
   ngOnDestroy(): void {
