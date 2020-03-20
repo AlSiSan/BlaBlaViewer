@@ -1,31 +1,5 @@
 <div id="bottombar" class="row bg-dark py-2 pl-4 pr-4 active">
-    <div *ngIf="this.comm.loadFinished()" class="col-12 border-dark bg-light d-flex">
-        <div class="card">
-            <div class="card-header">Viajes realizados</div>
-            <div class="card-body">
-                <p class="card-text">{{this.comm.getTotalJourneys()}}</p>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">Media por día</div>
-            <div class="card-body">
-                <p class="card-text">{{this.comm.getTotalJourneysPerDay()}}</p>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">Días</div>
-            <div class="card-body">
-                <p class="card-text">{{this.comm.getTotalDays()}}</p>
-            </div>
-        </div>
+    <div class="col-12 border-dark bg-light">
+        asd
     </div>
-    <div *ngIf="!this.comm.loadFinished()" class="col-12 border-dark bg-light">
-        <div class="card">
-            <div class="card-header">Cargando datos...</div>
-            <div class="card-body">
-                <p class="card-text">Espere unos segundos...</p>
-            </div>
-        </div>
-    </div>
-
 </div>

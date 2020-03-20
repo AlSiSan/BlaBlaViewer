@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { CommunicationService } from '../../../services/communication.service';
 
 @Component({
   selector: 'app-map-bottombar',
@@ -8,7 +7,7 @@ import { CommunicationService } from '../../../services/communication.service';
 })
 export class MapBottombarComponent implements OnInit {
 
-  constructor( public comm: CommunicationService ) { }
+  constructor( ) { }
 
   ngOnInit() {
 

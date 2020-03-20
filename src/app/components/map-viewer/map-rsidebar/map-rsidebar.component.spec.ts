@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GraphicsModalComponent } from './graphics-modal.component';
+import { MapRsidebarComponent } from './map-rsidebar.component';
 
-describe('GraphicsModalComponent', () => {
-  let component: GraphicsModalComponent;
-  let fixture: ComponentFixture<GraphicsModalComponent>;
+describe('MapRsidebarComponent', () => {
+  let component: MapRsidebarComponent;
+  let fixture: ComponentFixture<MapRsidebarComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ GraphicsModalComponent ]
+      declarations: [ MapRsidebarComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(GraphicsModalComponent);
+    fixture = TestBed.createComponent(MapRsidebarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
