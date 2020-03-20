@@ -27,9 +27,7 @@
                             "src/styles.css",
                             "node_modules/chartist/dist/chartist.min.css"
                         ],
-                        "scripts": [
-                            "node_modules/chartist/dist/chartist.min.js"
-                        ]
+                        "scripts": []
                     },
                     "configurations": {
                         "production": {
@@ -86,9 +84,7 @@
                             "src/styles.css",
                             "node_modules/chartist/dist/chartist.min.css"
                         ],
-                        "scripts": [
-                            "node_modules/chartist/dist/chartist.min.js"
-                        ]
+                        "scripts": []
                     }
                 },
                 "lint": {
