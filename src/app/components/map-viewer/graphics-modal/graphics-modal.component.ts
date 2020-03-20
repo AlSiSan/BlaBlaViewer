@@ -20,20 +20,20 @@ export class GraphicsModalComponent implements OnInit {
   }
 
   journeysPerDay() {
-    let journeysPerDayDf = this.comm.journeysDf.groupBy('DIA')
-          .aggregate(group => group.count()).rename('aggregation', 'groupCount');
+    // let journeysPerDayDf = this.comm.journeysDf.groupBy('DIA')
+    //       .aggregate(group => group.count()).rename('aggregation', 'groupCount');
 
-    this.journeysPerDayChart = new Chartist.Line('#journeysPerDayChart', {
-      labels: journeysPerDayDf.toArray('DIA'),
-      series: [
-        journeysPerDayDf.toArray('groupCount')
-      ]
-    }, {
-      fullWidth: true,
-      chartPadding: {
-        right: 40
-      }
-    });
+    // this.journeysPerDayChart = new Chartist.Line('#journeysPerDayChart', {
+    //   labels: journeysPerDayDf.toArray('DIA'),
+    //   series: [
+    //     journeysPerDayDf.toArray('groupCount')
+    //   ]
+    // }, {
+    //   fullWidth: true,
+    //   chartPadding: {
+    //     right: 40
+    //   }
+    // });
   }
 
 
