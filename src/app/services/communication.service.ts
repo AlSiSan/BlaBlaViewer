@@ -78,4 +78,8 @@ export class CommunicationService {
     return this.totalDays;
   }
 
+  setGraphicsShown(value) {
+    this.graphicsShown = value;
+  }
+
 }

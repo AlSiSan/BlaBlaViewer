@@ -2,7 +2,7 @@
 
 <form #filtersForm="ngForm" class="container align-items-center" (ngSubmit)="applyFilters()">
     <div class="d-flex flex-column align-items-end">
-        <button class="btn btn-outline-light m-2 align-items-end" type="submit"><i class="fa fa-check fa-fw"></i> Aplicar</button>
+        <button class="btn btn-outline-light m-2 align-items-end" type="submit" (click)="restoreGraphicsModal()"><i class="fa fa-check fa-fw"></i> Aplicar</button>
     </div>
 
     <div class="form-group my-2">

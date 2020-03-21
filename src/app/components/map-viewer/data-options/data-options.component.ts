@@ -28,4 +28,11 @@ export class DataOptionsComponent implements OnInit {
     return this.comm.filterProvincesDestination;
   }
 
+  // When changed, the graphics modal has to render again
+  // The component has to be destroyed, so when it is rendered,
+  // The graphics render with the size of the modal
+  restoreGraphicsModal() {
+    this.comm.setGraphicsShown(false);
+  }
+
 }
