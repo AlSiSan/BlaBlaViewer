@@ -1,6 +1,15 @@
 <div id="bottombar" class="row bg-dark py-2 px-4 active">
     <div *ngIf="this.comm.loadFinished()" class="col-12 border-dark bg-light d-flex">
         <div class="card flex-fill">
+            <div class="card-header">Fecha</div>
+            <div class="card-body flex-column">
+                <p class="card-text">Desde {{dateFrom}}</p>
+            </div>
+            <div class="card-body flex-column">
+                <p class="card-text">Hasta {{dateTo}}</p>
+            </div>
+        </div>
+        <div class="card flex-fill">
             <div class="card-header">Viajes realizados</div>
             <div class="card-body">
                 <p class="card-text">{{this.comm.getTotalJourneys()}}</p>
