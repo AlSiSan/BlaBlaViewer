@@ -1,19 +1,10 @@
 import OlVectorLayer from 'ol/layer/Vector.js';
-import OlHeatMap from 'ol/layer/HeatMap.js';
 import OlTileLayer from 'ol/layer/Tile';
 import OlLayerGroup from 'ol/layer/Group';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import { Select } from 'ol/interaction';
 
 export class GenTileLayer extends OlTileLayer {
-    name: string;
-    title: string;
-    constructor( params ) {
-        super( params );
-    }
-}
-
-export class HeatMapLayer extends OlHeatMap {
     name: string;
     title: string;
     constructor( params ) {
