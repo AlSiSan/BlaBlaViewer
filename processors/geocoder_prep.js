@@ -20,7 +20,7 @@ fs.createReadStream('DATOS_BLABLACAR_norm1.txt')
         });
         writer.write(JSON.stringify({ data: municipalitiesList }));
 
-        let writer = fs.createWriteStream(`munList2.json`, { encoding: 'utf8' });
+        writer = fs.createWriteStream(`munList2.json`, { encoding: 'utf8' });
         municipalitiesList = [];
         Object.keys(municipalities).slice(3430, 3430 * 2).forEach((key) => {
             municipalitiesList.push(municipalities[key].mun);

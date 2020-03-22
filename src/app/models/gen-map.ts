@@ -216,7 +216,7 @@ export class GenMap extends OlMap {
                 })
             });
 
-            const journeysTrack = new GenVectorLayer({
+            let journeysTrack = new GenVectorLayer({
                 title: 'Trayectos viajes',
                 name: 'ViajesTracks',
                 visible: true,
@@ -242,7 +242,7 @@ export class GenMap extends OlMap {
                 }
             });
 
-            const heatLayer = new HeatMapLayer({
+            let heatLayer = new HeatMapLayer({
                 title: 'Mapa de calor',
                 name: 'journeysHeatMap',
                 visible: true,

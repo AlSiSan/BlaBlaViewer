@@ -23,6 +23,7 @@ export class GraphicsModalComponent implements OnInit {
     new Promise(r => setTimeout(r, 300)).then(() => {
       this.loadingGraphics = false;
       this.journeysPerDay();
+      this.pricePerKmPerDay();
       this.journeysPerOrigin();
       this.journeysPerDestination();
     });
@@ -79,6 +80,66 @@ export class GraphicsModalComponent implements OnInit {
           },
           axisY: {
             axisTitle: 'Viajes',
+            axisClass: 'ct-axis-title',
+            offset: {
+              x: 0,
+              y: 0
+            },
+            textAnchor: 'middle',
+            flipTitle: false
+          }
+        }),
+          Chartist.plugins.tooltip()
+      ]
+    });
+  }
+
+  pricePerKmPerDay() {
+    const pricesPerDayDf = this.comm.journeysDf.groupBy('DIA')
+                          .aggregate(group => group.stat.mean('IMP_KM')).rename('aggregation', 'IMP_KM');
+
+    const serie = [];
+    const daysLabels = pricesPerDayDf.toArray('DIA');
+    pricesPerDayDf.toArray('IMP_KM').forEach((priceOneDay, index) => {
+      const date = new Date(daysLabels[index].substring(0, 10));
+      serie.push({
+        meta: date.toLocaleDateString(undefined, {weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric'}),
+        value: priceOneDay
+      });
+    });
+
+    this.journeysPerDayChart = new Chartist.Line('#pricePerKmPerDayChart', {
+      labels: daysLabels,
+      series: [
+        serie
+      ]
+    }, {
+      fullWidth: true,
+      chartPadding: {
+        top: 20,
+        right: 20,
+        bottom: 30,
+        left: 20,
+      },
+      axisX: {
+        labelInterpolationFnc: function skipLabels(value, index) {
+          return index % (5 * Math.ceil((pricesPerDayDf.count() / 30))) === 0 ?
+                  `${value.substring(8, 10)}/${value.substring(5, 7)}/${value.substring(2, 4)}` : null;
+        }
+      },
+      plugins: [
+        Chartist.plugins.ctAxisTitle({
+          axisX: {
+            axisTitle: 'Días',
+            axisClass: 'ct-axis-title',
+            offset: {
+              x: 0,
+              y: 40
+            },
+            textAnchor: 'middle'
+          },
+          axisY: {
+            axisTitle: 'Precio por km',
             axisClass: 'ct-axis-title',
             offset: {
               x: 0,

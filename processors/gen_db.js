@@ -27,6 +27,9 @@ const otros = {
 const uri = "mongodb+srv://admin:admin123@blablaviewertest-exjko.mongodb.net/test?retryWrites=true&w=majority";
 const client = new MongoClient(uri);
 
+/**
+ * Uploads the data to the database
+ */
 client.connect(() => {
     fs.createReadStream('DATOS_BLABLACAR_norm1.txt')
         .pipe(csv({ separator: '|' }))
@@ -37,7 +40,7 @@ client.connect(() => {
             let destinoSlug = journey.DESTINO.split(' ').join('-');
 
             if (!isNaN(journey.IMP_KM)) {
-                journey.IMP_KM = parseInt(journey.IMP_KM);
+                journey.IMP_KM = parseFloat(journey.IMP_KM).toFixed(3);
 
                 journey.DIA = new Date(`${journey.DIA.substring(6, 10)}-${journey.DIA.substring(3, 5)}-${journey.DIA.substring(0, 2)}`);
                 journey.ORIGEN_C = origenSlug in municipalities ? municipalities[origenSlug].point : otros.point;
