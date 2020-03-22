@@ -99,8 +99,6 @@ export class GraphicsModalComponent implements OnInit {
           .filter(row => row.get('ORIGEN_P') !== 'Otros')
           .sortBy('groupCount', true);
 
-    console.log(journeysPerDayDf);
-
     this.journeysPerOriginChart = new Chartist.Bar('#journeysPerOriginChart', {
       labels: journeysPerDayDf.head(10).toArray('ORIGEN_P'),
       series: [journeysPerDayDf.head(10).toArray('groupCount')
@@ -150,8 +148,6 @@ export class GraphicsModalComponent implements OnInit {
           .aggregate(group => group.count()).rename('aggregation', 'groupCount')
           .filter(row => row.get('DESTINO_P') !== 'Otros')
           .sortBy('groupCount', true);
-
-    console.log(journeysPerDayDf);
 
     this.journeysPerOriginChart = new Chartist.Bar('#journeysPerDestinationChart', {
       labels: journeysPerDayDf.head(10).toArray('DESTINO_P'),

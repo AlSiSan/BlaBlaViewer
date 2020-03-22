@@ -28,6 +28,14 @@ body {
     right: 10px;
 }
 
+.ol-legend {
+    left: 60px !important;
+    top: unset !important;
+    bottom: 210px !important;
+    right: unset !important;
+    max-height: 200px !important;
+}
+
 
 /* 
 div.ol-zoom {

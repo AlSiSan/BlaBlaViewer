@@ -7,6 +7,7 @@ import { click, pointerMove, altKeyOnly } from 'ol/events/condition';
 import { View } from 'ol';
 import { Subject, Observable } from 'rxjs';
 import { GenSelect } from '../models/customLayers/gen-layers';
+import { CommunicationService } from './communication.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,14 +24,14 @@ export class MapServiceService {
 
   public selectionData = new Subject<any>();
 
-  constructor( private http: HttpClient ) { }
+  constructor( private http: HttpClient, private comm: CommunicationService ) { }
 
 
   generateMap() {
     if (this.opt['view'] === undefined) {
       this.restoreInitialView();
     }
-    this.map = new GenMap( this.opt );
+    this.map = new GenMap( this.comm, this.opt );
 
     return this.map;
   }

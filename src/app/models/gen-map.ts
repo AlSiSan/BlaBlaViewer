@@ -2,7 +2,6 @@ import OlMap from 'ol/Map';
 
 import OlGeoJSON from 'ol/format/GeoJSON.js';
 import OlVectorSource from 'ol/source/Vector.js';
-import VectorTileSource from 'ol/source/VectorTile.js';
 
 import {Cluster} from 'ol/source';
 import OlXYZ from 'ol/source/XYZ';
@@ -13,15 +12,15 @@ import { Fill, Stroke, Style, Text, Circle as CircleStyle } from 'ol/style.js';
 
 import { Zoom } from 'ol/control';
 
-import Projection from 'ol/proj/Projection';
-
-import { GenLayerGroup, GenTileLayer, GenVectorLayer, GenVectorTileLayer } from './customLayers/gen-layers';
+import { GenLayerGroup, GenTileLayer, GenVectorLayer } from './customLayers/gen-layers';
 
 import LayerSwitcher from 'ol-layerswitcher';
-// import LayerSwitcher from 'ol-ext/control/LayerSwitcher';
-// import Timeline from 'ol-ext/control/Timeline';
 
 import * as turf from '@turf/turf';
+
+import Legend from 'ol-ext/control/Legend';
+
+import { CommunicationService } from '../services/communication.service';
 
 export class GenMap extends OlMap {
 
@@ -30,13 +29,19 @@ export class GenMap extends OlMap {
 
     // Cache for styles
     styleCache = {
-        business: {},
-        polygons: {}
+        originC: {},
+        destinationC: {}
     };
 
     wmsLegends = '';
 
-    constructor( opt? ) {
+    legend: Legend;
+    legendCache = {
+        origenC: false,
+        destinationC: false
+    };
+
+    constructor( private comm: CommunicationService, opt? ) {
         super({
             target: 'map',
             layers: [
@@ -94,15 +99,7 @@ export class GenMap extends OlMap {
                     title: 'Datos',
                     type: 'group',
                     fold: 'open',
-                    layers: [
-                        new GenLayerGroup({
-                            name: 'Viajes',
-                            title: 'Viajes',
-                            type: 'group',
-                            fold: 'close',
-                            layers: []
-                        })
-                    ],
+                    layers: [],
                     zIndex: 20
                 })
             ],
@@ -111,9 +108,19 @@ export class GenMap extends OlMap {
                 new Zoom()
             ]
         });
-
         this.loadPopulation();
+        this.loadOriginJourneys();
+        this.loadDestinationJourneys();
 
+        this.legend = new Legend({
+            title: 'Leyenda',
+            style: (feature) => {
+                return [feature.getStyle()];
+            },
+            collapsed: false
+        });
+
+        this.addControl(this.legend);
     }
 
     getLegend() {
@@ -130,7 +137,7 @@ export class GenMap extends OlMap {
     }
 
     loadPopulation() {
-        let tileWMSSource = new TileWMS({
+        const tileWMSSource = new TileWMS({
             params: {
                 LAYERS: 'gpw-v4:gpw-v4-population-density_2020',
                 TILED: true,
@@ -145,13 +152,205 @@ export class GenMap extends OlMap {
             zIndex: 2
         });
         this.wmsLegends = tileWMSSource.getLegendUrl(this.getView().getResolution());
-        ly.setOpacity(0.3);
+        ly.setOpacity(0.4);
 
-        for (let element of this.getLayers()['array_']) {
+        for (const element of this.getLayers()['array_']) {
             if (element.values_.title === 'Overlays') {
                 element.values_.layers.array_.push(ly);
             }
         }
+    }
+
+    loadOriginJourneys() {
+        this.comm.getJourneysData().subscribe((resDf) => {
+            let data = resDf.groupBy('ORIGEN_C')
+                            .aggregate(group => group.count())
+                            .rename('aggregation', 'groupCount');
+
+            // Generating points from polygons for cluster
+            const geoPoints = {
+                type: 'FeatureCollection',
+                features: []
+            };
+
+            data.toArray().forEach((origen) => {
+                geoPoints.features.push(
+                    turf.point(origen[0].coordinates, {journeys: origen[1]})
+                );
+            });
+
+            // Generating Cluster with polygons points
+            const clusterSource = new Cluster({
+                distance: 60,
+                source: new OlVectorSource({
+                    features: new OlGeoJSON().readFeatures(geoPoints, {
+                        featureProjection: 'EPSG:3857'
+                    })
+                })
+            });
+
+            const ly = new GenVectorLayer({
+                title: 'Viajes origen',
+                name: 'ViajesOrigenCluster',
+                visible: true,
+                source: clusterSource,
+                style: (feature) => {
+                    
+                    // Cachea los clusters para no regenerarlos
+                    let journeysNum = 0;
+                    feature.getProperties().features.forEach((journeyFeature) => {
+                        journeysNum += journeyFeature.getProperties().journeys;
+                    });
+                    const size = this.getView().getZoom() > 11 ? 3 : 1;
+                    let style = this.styleCache.originC[`${journeysNum}${size}`];
+
+
+                    if (!style) {
+
+                        // Añade campo a la leyenda con estilo
+                        if (!this.legendCache.origenC) {
+                            this.legendCache.origenC = true;
+                            const legendStyle =  new Style({
+                                image: new CircleStyle({
+                                    radius: 15,
+                                    stroke: new Stroke({
+                                        color: '#fff'
+                                    }),
+                                    fill: new Fill({
+                                        color: '#00ff00'
+                                    })
+                                })
+                            });
+                            const featureCloneStyle = feature.clone();
+                            featureCloneStyle.setStyle(legendStyle);
+                            this.legend.addRow({ title: 'Viajes origen', feature: featureCloneStyle });
+                        }
+                        style = new Style({
+                            image: new CircleStyle({
+                                radius: (journeysNum > 10000 ? 50 : journeysNum > 1000 ? 30 : 10) * size,
+                                stroke: new Stroke({
+                                    color: '#fff'
+                                }),
+                                fill: new Fill({
+                                    color: 'rgba(0, 255, 0, 0.5)'
+                                })
+                            }),
+                            text: new Text({
+                                text: journeysNum.toString(),
+                                fill: new Fill({
+                                    color: '#fff'
+                                })
+                            })
+                        });
+                        this.styleCache.originC[`${journeysNum}${size}`] = style;
+                    }
+                    return style;
+                }
+            });
+
+            for (const element of this.getLayers()['array_']) {
+                if (element.values_.title === 'Datos') {
+                    element.values_.layers.array_.push(ly);
+                }
+            }
+            this.render();
+        });
+    }
+
+    loadDestinationJourneys() {
+        this.comm.getJourneysData().subscribe((resDf) => {
+            let data = resDf.groupBy('DESTINO_C')
+                            .aggregate(group => group.count())
+                            .rename('aggregation', 'groupCount');
+
+            // Generating points from polygons for cluster
+            const geoPoints = {
+                type: 'FeatureCollection',
+                features: []
+            };
+
+            data.toArray().forEach((origen) => {
+                geoPoints.features.push(
+                    turf.point(origen[0].coordinates, {journeys: origen[1]})
+                );
+            });
+
+            // Generating Cluster with polygons points
+            const clusterSource = new Cluster({
+                distance: 60,
+                source: new OlVectorSource({
+                    features: new OlGeoJSON().readFeatures(geoPoints, {
+                        featureProjection: 'EPSG:3857'
+                    })
+                })
+            });
+
+            const ly = new GenVectorLayer({
+                title: 'Viajes destino',
+                name: 'ViajesDestinoCluster',
+                visible: true,
+                source: clusterSource,
+                style: (feature) => {
+
+                    // Cachea los clusters para no regenerarlos
+                    let journeysNum = 0;
+                    feature.getProperties().features.forEach((journeyFeature) => {
+                        journeysNum += journeyFeature.getProperties().journeys;
+                    });
+                    const size = this.getView().getZoom() > 11 ? 3 : 1;
+                    let style = this.styleCache.destinationC[`${journeysNum}${size}`];
+
+                    if (!style) {
+
+                        // Añade campo a la leyenda con estilo
+                        if (!this.legendCache.destinationC) {
+                            this.legendCache.destinationC = true;
+                            const legendStyle =  new Style({
+                                image: new CircleStyle({
+                                    radius: 15,
+                                    stroke: new Stroke({
+                                        color: '#fff'
+                                    }),
+                                    fill: new Fill({
+                                        color: '#0000ff'
+                                    })
+                                })
+                            });
+                            const featureCloneStyle = feature.clone();
+                            featureCloneStyle.setStyle(legendStyle);
+                            this.legend.addRow({ title: 'Viajes destino', feature: featureCloneStyle });
+                        }
+
+                        style = new Style({
+                            image: new CircleStyle({
+                                radius: (journeysNum > 10000 ? 50 : journeysNum > 1000 ? 30 : 10) * size,
+                                stroke: new Stroke({
+                                    color: '#fff'
+                                }),
+                                fill: new Fill({
+                                    color: 'rgba(0, 0, 255, 0.5)'
+                                })
+                            }),
+                            text: new Text({
+                                text: journeysNum.toString(),
+                                fill: new Fill({
+                                    color: '#fff'
+                                })
+                            })
+                        });
+                        this.styleCache.destinationC[`${journeysNum}${size}`] = style;
+                    }
+                    return style;
+                }
+            });
+
+            for (const element of this.getLayers()['array_']) {
+                if (element.values_.title === 'Datos') {
+                    element.values_.layers.array_.push(ly);
+                }
+            }
+            this.render();
+        });
     }
 
 }

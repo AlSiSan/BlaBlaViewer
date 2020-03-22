@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { globalConfig } from '../modules/globalconfig/globalconfig.module';
 import { map } from 'rxjs/operators';
-import DataFrame, { Row } from 'dataframe-js';
+import { DataFrame } from 'dataframe-js/';
 
 @Injectable({
   providedIn: 'root'
@@ -54,11 +54,8 @@ export class CommunicationService {
         this.totalJourneysPerDay = groupedDF.stat.mean('groupCount').toFixed(2);
         this.totalDays = groupedDF.count();
 
-        // console.log(groupedDF.toCollection());
-        // console.log(groupedDF.toCollection()[0].groupKey.DIA.substring(0, 10));
-        // console.log(groupedDF.toCollection()[0].group.count());
         this.loading = false;
-        return journeys;
+        return this.journeysDf;
       }));
   }
 
