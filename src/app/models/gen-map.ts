@@ -12,7 +12,7 @@ import { Fill, Stroke, Style, Text, Circle as CircleStyle } from 'ol/style.js';
 
 import { Zoom } from 'ol/control';
 
-import { GenLayerGroup, GenTileLayer, GenVectorLayer } from './customLayers/gen-layers';
+import { GenLayerGroup, GenTileLayer, GenVectorLayer, HeatMapLayer } from './customLayers/gen-layers';
 
 import LayerSwitcher from 'ol-layerswitcher';
 
@@ -38,7 +38,8 @@ export class GenMap extends OlMap {
     legend: Legend;
     legendCache = {
         origenC: false,
-        destinationC: false
+        destinationC: false,
+        journeysLines: false
     };
 
     constructor( private comm: CommunicationService, opt? ) {
@@ -108,10 +109,22 @@ export class GenMap extends OlMap {
                 new Zoom()
             ]
         });
+
+        // Load layers
         this.loadPopulation();
+        this.loadLineJourneys();
         this.loadOriginJourneys();
         this.loadDestinationJourneys();
 
+        // Set controls
+        this.setLegend();
+    }
+
+    /*
+    Sets the legend in the viewer
+    The position is defined in the styles file
+    */
+    setLegend() {
         this.legend = new Legend({
             title: 'Leyenda',
             style: (feature) => {
@@ -161,9 +174,103 @@ export class GenMap extends OlMap {
         }
     }
 
+    loadLineJourneys() {
+        this.comm.getJourneysData().subscribe((resDf) => {
+            let data = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros')
+                            .groupBy('ORIGEN_C', 'DESTINO_C')
+                            .aggregate(group => group.count())
+                            .rename('aggregation', 'groupCount')
+                            .filter(row => row.get('groupCount') > 5);
+
+            // Generating points from polygons for cluster
+            const geoLines = {
+                type: 'FeatureCollection',
+                features: []
+            };
+            const geoHeat = {
+                type: 'FeatureCollection',
+                features: []
+            };
+
+            data.toArray().forEach((line) => {
+                geoLines.features.push(
+                    turf.lineString([line[0].coordinates, line[1].coordinates], {journeys: line[2]})
+                );
+                geoHeat.features.push(
+                    turf.point(line[0].coordinates, {journeys: line[2]})
+                );
+                geoHeat.features.push(
+                    turf.point(line[1].coordinates, {journeys: line[2]})
+                );
+            });
+
+            // Generating lines source
+            const journeysVectorSources = new OlVectorSource({
+                features: new OlGeoJSON().readFeatures(geoLines, {
+                    featureProjection: 'EPSG:3857'
+                })
+            });
+
+            // Generating heatMap points source
+            const journeysHeatVectorSources = new OlVectorSource({
+                features: new OlGeoJSON().readFeatures(geoHeat, {
+                    featureProjection: 'EPSG:3857'
+                })
+            });
+
+            let ly = new GenVectorLayer({
+                title: 'Trayectos viajes',
+                name: 'ViajesTracks',
+                visible: true,
+                source: journeysVectorSources,
+                style: (feature) => {
+                    // Añade campo a la leyenda con estilo
+                    if (!this.legendCache.journeysLines) {
+                        this.legendCache.journeysLines = true;
+                        const legendStyle =  new Style(
+                            {
+                                fill: new Fill({ color: 'rgba(0, 0, 255, 0.5)' }),
+                                stroke: new Stroke({ color: 'rgba(0, 0, 255, 0.5)', width: 2, lineDash: [5, 8]})
+                            }
+                        );
+                        const featureCloneStyle = feature.clone();
+                        featureCloneStyle.setStyle(legendStyle);
+                        this.legend.addRow({ title: 'Trayectos', feature: featureCloneStyle });
+                    }
+                    return new Style({
+                        fill: new Fill({ color: 'rgba(0, 0, 255, 0.5)' }),
+                        stroke: new Stroke({ color: 'rgba(0, 0, 255, 0.5)', width: Math.log(feature.get('journeys')), lineDash: [5, 8]})
+                    });
+                }
+            });
+
+            let heatLayer = new HeatMapLayer({
+                title: 'Mapa de calor',
+                name: 'journeysHeatMap',
+                visible: true,
+                source: journeysHeatVectorSources,
+                blur: 20,
+                radius: 10,
+                weight: function(feature) {
+                  return feature.get('journeys');
+                }
+              });
+
+            for (const element of this.getLayers()['array_']) {
+                if (element.values_.title === 'Datos') {
+                    element.values_.layers.array_.push(ly);
+                    element.values_.layers.array_.push(heatLayer);
+                }
+            }
+            this.renderSync();
+            this.render();
+        });
+    }
+
     loadOriginJourneys() {
         this.comm.getJourneysData().subscribe((resDf) => {
-            let data = resDf.groupBy('ORIGEN_C')
+            let data = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros')
+                            .groupBy('ORIGEN_C')
                             .aggregate(group => group.count())
                             .rename('aggregation', 'groupCount');
 
@@ -192,10 +299,9 @@ export class GenMap extends OlMap {
             const ly = new GenVectorLayer({
                 title: 'Viajes origen',
                 name: 'ViajesOrigenCluster',
-                visible: true,
+                visible: false,
                 source: clusterSource,
                 style: (feature) => {
-                    
                     // Cachea los clusters para no regenerarlos
                     let journeysNum = 0;
                     feature.getProperties().features.forEach((journeyFeature) => {
@@ -232,7 +338,7 @@ export class GenMap extends OlMap {
                                     color: '#fff'
                                 }),
                                 fill: new Fill({
-                                    color: 'rgba(0, 255, 0, 0.5)'
+                                    color: 'rgba(0, 255, 0, 0.6)'
                                 })
                             }),
                             text: new Text({
@@ -259,7 +365,8 @@ export class GenMap extends OlMap {
 
     loadDestinationJourneys() {
         this.comm.getJourneysData().subscribe((resDf) => {
-            let data = resDf.groupBy('DESTINO_C')
+            let data = resDf.filter(row => row.get('DESTINO_P') !== 'Otros')
+                            .groupBy('DESTINO_C')
                             .aggregate(group => group.count())
                             .rename('aggregation', 'groupCount');
 
@@ -288,7 +395,7 @@ export class GenMap extends OlMap {
             const ly = new GenVectorLayer({
                 title: 'Viajes destino',
                 name: 'ViajesDestinoCluster',
-                visible: true,
+                visible: false,
                 source: clusterSource,
                 style: (feature) => {
 
@@ -328,7 +435,7 @@ export class GenMap extends OlMap {
                                     color: '#fff'
                                 }),
                                 fill: new Fill({
-                                    color: 'rgba(0, 0, 255, 0.5)'
+                                    color: 'rgba(0, 0, 255, 0.6)'
                                 })
                             }),
                             text: new Text({

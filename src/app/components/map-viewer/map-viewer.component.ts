@@ -15,10 +15,7 @@ export class MapViewerComponent implements OnInit, OnDestroy {
 
   constructor( private router: Router, private mapService: MapServiceService, private comm: CommunicationService) {
     this.viewerBottom = '200px';
-    this.comm.getJourneysData()
-      .subscribe((res) => {
-        // console.log(res);
-      });
+    // this.comm.getJourneysData();
    }
 
   ngOnInit() {
