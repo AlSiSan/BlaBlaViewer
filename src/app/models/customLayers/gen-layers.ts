@@ -2,8 +2,8 @@ import OlVectorLayer from 'ol/layer/Vector.js';
 import OlTileLayer from 'ol/layer/Tile';
 import OlLayerGroup from 'ol/layer/Group';
 import VectorTileLayer from 'ol/layer/VectorTile';
+import HeatMap from 'ol/layer/Heatmap';
 import { Select } from 'ol/interaction';
-import OlHeatMap from 'ol/layer/HeatMap';
 
 export class GenTileLayer extends OlTileLayer {
     name: string;
@@ -13,7 +13,7 @@ export class GenTileLayer extends OlTileLayer {
     }
 }
 
-export class HeatMapLayer extends OlHeatMap {
+export class HeatMapLayer extends HeatMap {
     name: string;
     title: string;
     constructor( params ) {
