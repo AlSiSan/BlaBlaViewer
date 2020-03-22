@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { globalConfig } from '../modules/globalconfig/globalconfig.module';
 import { map } from 'rxjs/operators';
 import { DataFrame } from 'dataframe-js/';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,7 @@ export class CommunicationService {
   filterProvincesDestination = [];
 
   journeysDf: DataFrame;
+  journeysDfSubject = new Subject<any>();
   totalJourneys = 0;
   totalDays = 0;
   totalJourneysPerDay = 0;
@@ -47,6 +49,7 @@ export class CommunicationService {
       .pipe(map((journeys) => {
         // this.journeys = journeys;
         this.journeysDf = new DataFrame(journeys);
+        this.journeysDfSubject.next(Date.now());
         this.totalJourneys = this.journeysDf.count();
 
         // Grouping by Days

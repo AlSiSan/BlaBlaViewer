@@ -110,9 +110,18 @@ export class GenMap extends OlMap {
             ]
         });
         this.loadPopulation();
-        this.loadLineJourneys();
-        this.loadOriginJourneys();
-        this.loadDestinationJourneys();
+        this.comm.journeysDfSubject.asObservable().subscribe(() => {
+            // Cargas asínscronas
+            new Promise(r => setTimeout(r, 1)).then(() => {
+                this.loadLineJourneys(this.comm.journeysDf);
+            });
+            new Promise(r => setTimeout(r, 1)).then(() => {
+                this.loadOriginJourneys(this.comm.journeysDf);
+            });
+            new Promise(r => setTimeout(r, 1)).then(() => {
+                this.loadDestinationJourneys(this.comm.journeysDf);
+            });
+        });
 
         this.legend = new Legend({
             title: 'Leyenda',
@@ -163,8 +172,8 @@ export class GenMap extends OlMap {
         }
     }
 
-    loadLineJourneys() {
-        this.comm.getJourneysData().subscribe((resDf) => {
+    loadLineJourneys(resDf) {
+        ((resDf) => {
             let data = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros')
                             .groupBy('ORIGEN_C', 'DESTINO_C')
                             .aggregate(group => group.count())
@@ -207,7 +216,7 @@ export class GenMap extends OlMap {
                 })
             });
 
-            let ly = new GenVectorLayer({
+            const journeysTrack = new GenVectorLayer({
                 title: 'Trayectos viajes',
                 name: 'ViajesTracks',
                 visible: true,
@@ -228,19 +237,19 @@ export class GenMap extends OlMap {
                     }
                     return new Style({
                         fill: new Fill({ color: 'rgba(0, 0, 255, 0.5)' }),
-                        stroke: new Stroke({ color: 'rgba(0, 0, 255, 0.5)', width: Math.log(feature.get('journeys')), lineDash: [5, 8]})
+                        stroke: new Stroke({ color: 'rgba(0, 0, 255, 0.5)', width: Math.log(feature.get('journeys') / 2), lineDash: [5, 8]})
                     });
                 }
             });
 
-            let heatLayer = new HeatMapLayer({
+            const heatLayer = new HeatMapLayer({
                 title: 'Mapa de calor',
                 name: 'journeysHeatMap',
                 visible: true,
                 source: journeysHeatVectorSources,
-                blur: 20,
-                radius: 10,
-                weight: function(feature) {
+                blur: 30,
+                radius: 7,
+                weight(feature) {
                   return feature.get('journeys');
                 }
               });
@@ -248,17 +257,17 @@ export class GenMap extends OlMap {
             for (const element of this.getLayers()['array_']) {
                 if (element.values_.title === 'Datos') {
                     heatLayer.setZIndex(8);
-                    ly.setZIndex(9);
-                    element.values_.layers.array_.push(ly);
+                    journeysTrack.setZIndex(9);
+                    element.values_.layers.array_.push(journeysTrack);
                     element.values_.layers.array_.push(heatLayer);
                 }
             }
             this.render();
-        });
+        })(resDf);
     }
 
-    loadOriginJourneys() {
-        this.comm.getJourneysData().subscribe((resDf) => {
+    loadOriginJourneys(resDf) {
+        ((resDf) => {
             let data = resDf.groupBy('ORIGEN_C')
                             .aggregate(group => group.count())
                             .rename('aggregation', 'groupCount');
@@ -291,7 +300,7 @@ export class GenMap extends OlMap {
                 visible: false,
                 source: clusterSource,
                 style: (feature) => {
-                    
+
                     // Cachea los clusters para no regenerarlos
                     let journeysNum = 0;
                     feature.getProperties().features.forEach((journeyFeature) => {
@@ -346,15 +355,16 @@ export class GenMap extends OlMap {
 
             for (const element of this.getLayers()['array_']) {
                 if (element.values_.title === 'Datos') {
+                    ly.setZIndex(10);
                     element.values_.layers.array_.push(ly);
                 }
             }
             this.render();
-        });
+        })(resDf);
     }
 
-    loadDestinationJourneys() {
-        this.comm.getJourneysData().subscribe((resDf) => {
+    loadDestinationJourneys(resDf) {
+        ((resDf) => {
             let data = resDf.groupBy('DESTINO_C')
                             .aggregate(group => group.count())
                             .rename('aggregation', 'groupCount');
@@ -442,11 +452,11 @@ export class GenMap extends OlMap {
 
             for (const element of this.getLayers()['array_']) {
                 if (element.values_.title === 'Datos') {
+                    ly.setZIndex(10);
                     element.values_.layers.array_.push(ly);
                 }
             }
             this.render();
-        });
+        })(resDf);
     }
-
 }
