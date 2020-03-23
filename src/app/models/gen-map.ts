@@ -113,9 +113,7 @@ export class GenMap extends OlMap {
         this.loadPopulation();
         this.comm.journeysDfSubject.asObservable().subscribe(() => {
             // Cargas asínscronas
-            new Promise(r => setTimeout(r, 1)).then(() => {
-                this.loadLineJourneys(this.comm.journeysDf);
-            });
+            this.loadLineJourneys(this.comm.journeysDf);
             new Promise(r => setTimeout(r, 1)).then(() => {
                 this.loadOriginJourneys(this.comm.journeysDf);
             });
