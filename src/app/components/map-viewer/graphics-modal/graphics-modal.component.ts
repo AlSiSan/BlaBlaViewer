@@ -192,7 +192,7 @@ export class GraphicsModalComponent implements OnInit {
             textAnchor: 'middle'
           },
           axisY: {
-            axisTitle: 'Ciudades',
+            axisTitle: 'Provincias',
             axisClass: 'ct-axis-title',
             offset: {
               x: 0,
@@ -242,7 +242,7 @@ export class GraphicsModalComponent implements OnInit {
             textAnchor: 'middle'
           },
           axisY: {
-            axisTitle: 'Ciudades',
+            axisTitle: 'Provincias',
             axisClass: 'ct-axis-title',
             offset: {
               x: 0,
@@ -263,6 +263,9 @@ export class GraphicsModalComponent implements OnInit {
           .filter(row => row.get('ORIGEN_P') !== 'Otros')
           .sortBy('IMP_KM', true);
 
+    const lowValue = journeysPerDayDf.head(10).stat.min('IMP_KM');
+    const highValue = journeysPerDayDf.head(10).stat.max('IMP_KM');
+
     this.journeysPerOriginChart = new Chartist.Bar('#pricePerOriginChart', {
       labels: journeysPerDayDf.head(10).toArray('ORIGEN_P'),
       series: [journeysPerDayDf.head(10).toArray('IMP_KM')
@@ -274,6 +277,8 @@ export class GraphicsModalComponent implements OnInit {
         bottom: 30,
         left: 30,
       },
+      low: (lowValue - 0.5 > 0) ? (lowValue - 0.5) : 0,
+      high: highValue + 0.5,
       reverseData: true,
       horizontalBars: true,
       axisY: {
@@ -292,7 +297,7 @@ export class GraphicsModalComponent implements OnInit {
             textAnchor: 'middle'
           },
           axisY: {
-            axisTitle: 'Ciudades',
+            axisTitle: 'Provincias',
             axisClass: 'ct-axis-title',
             offset: {
               x: 0,
@@ -313,6 +318,9 @@ export class GraphicsModalComponent implements OnInit {
           .filter(row => row.get('DESTINO_P') !== 'Otros')
           .sortBy('IMP_KM', true);
 
+    const lowValue = journeysPerDayDf.head(10).stat.min('IMP_KM');
+    const highValue = journeysPerDayDf.head(10).stat.max('IMP_KM');
+
     this.journeysPerOriginChart = new Chartist.Bar('#pricePerDestinationChart', {
       labels: journeysPerDayDf.head(10).toArray('DESTINO_P'),
       series: [journeysPerDayDf.head(10).toArray('IMP_KM')
@@ -324,6 +332,8 @@ export class GraphicsModalComponent implements OnInit {
         bottom: 30,
         left: 30,
       },
+      low: (lowValue - 0.5 > 0) ? (lowValue - 0.5) : 0,
+      high: highValue + 0.5,
       reverseData: true,
       horizontalBars: true,
       axisY: {
@@ -342,7 +352,7 @@ export class GraphicsModalComponent implements OnInit {
             textAnchor: 'middle'
           },
           axisY: {
-            axisTitle: 'Ciudades',
+            axisTitle: 'Provincias',
             axisClass: 'ct-axis-title',
             offset: {
               x: 0,
