@@ -49,11 +49,11 @@ let geoCodeData = (criteria, apiIndex) => {
         }).then((res) => {
             if (res && res[0]) {
                 res.some(function(resItem, index, _res) {
-                    if (resItem.type && (resItem.type == 'administrative' || resItem.type == 'city') && resItem.lon && resItem.lat) {
+                    if (resItem.type && (resItem.type == 'city' || resItem.type == 'administrative') && resItem.lon && resItem.lat) {
                         let point = turf.point([parseFloat(resItem.lon), parseFloat(resItem.lat)])
                         let feature = turf.feature(point.geometry, { id: criteria.split(' ').join('-'), 'municipality': criteria });
                         featuresList.push(feature);
-                        return resItem.type == 'administrative';
+                        return resItem.type == 'city' || resItem.type == 'administrative';
                     }
                 });
             }

@@ -96,10 +96,11 @@ export class GraphicsModalComponent implements OnInit {
 
   pricePerKmPerDay() {
     const pricesPerDayDf = this.comm.journeysDf.groupBy('DIA')
-                          .aggregate(group => group.stat.mean('IMP_KM')).rename('aggregation', 'IMP_KM');
+                          .aggregate(group => (group.stat.mean('IMP_KM') * 100)).rename('aggregation', 'IMP_KM');
 
     const serie = [];
     const daysLabels = pricesPerDayDf.toArray('DIA');
+    
     pricesPerDayDf.toArray('IMP_KM').forEach((priceOneDay, index) => {
       const date = new Date(daysLabels[index].substring(0, 10));
       serie.push({
@@ -139,7 +140,7 @@ export class GraphicsModalComponent implements OnInit {
             textAnchor: 'middle'
           },
           axisY: {
-            axisTitle: 'Precio por km',
+            axisTitle: 'cents. de € / km',
             axisClass: 'ct-axis-title',
             offset: {
               x: 0,

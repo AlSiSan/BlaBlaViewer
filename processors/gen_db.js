@@ -62,7 +62,9 @@ client.connect(() => {
         })
         .on('end', () => {
             console.log('Completado');
-            const collection = client.db('test').collection("Journeys");
+            // ddbb de pruebas ... test
+            // ddbb de pruebas ... blablachallenge
+            const collection = client.db('blablachallenge').collection("Journeys");
             collection.insertMany(journeys).then(() => {
                 client.close();
             });

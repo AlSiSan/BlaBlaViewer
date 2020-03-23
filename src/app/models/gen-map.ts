@@ -97,6 +97,7 @@ export class GenMap extends OlMap {
                     zIndex: 10
                 }),
                 new GenLayerGroup({
+                    name: 'Datos',
                     title: 'Datos',
                     type: 'group',
                     fold: 'open',
@@ -202,67 +203,80 @@ export class GenMap extends OlMap {
                 );
             });
 
-            // Generating lines source
-            const journeysVectorSources = new OlVectorSource({
-                features: new OlGeoJSON().readFeatures(geoLines, {
-                    featureProjection: 'EPSG:3857'
-                })
-            });
+            new Promise(r => setTimeout(r, 1)).then(() => {
+                // Generating lines source
+                const journeysVectorSources = new OlVectorSource({
+                    features: new OlGeoJSON().readFeatures(geoLines, {
+                        featureProjection: 'EPSG:3857'
+                    })
+                });
 
-            // Generating heatMap points source
-            const journeysHeatVectorSources = new OlVectorSource({
-                features: new OlGeoJSON().readFeatures(geoHeat, {
-                    featureProjection: 'EPSG:3857'
-                })
-            });
-
-            let journeysTrack = new GenVectorLayer({
-                title: 'Trayectos viajes',
-                name: 'ViajesTracks',
-                visible: true,
-                source: journeysVectorSources,
-                style: (feature) => {
-                    // Añade campo a la leyenda con estilo
-                    if (!this.legendCache.journeysLines) {
-                        this.legendCache.journeysLines = true;
-                        const legendStyle =  new Style(
-                            {
-                                fill: new Fill({ color: 'rgba(0, 0, 255, 0.5)' }),
-                                stroke: new Stroke({ color: 'rgba(0, 0, 255, 0.5)', width: 2, lineDash: [5, 8]})
-                            }
-                        );
-                        const featureCloneStyle = feature.clone();
-                        featureCloneStyle.setStyle(legendStyle);
-                        this.legend.addRow({ title: 'Trayectos', feature: featureCloneStyle });
+                let journeysTrack = new GenVectorLayer({
+                    title: 'Trayectos viajes',
+                    name: 'ViajesTracks',
+                    visible: true,
+                    source: journeysVectorSources,
+                    style: (feature) => {
+                        // Añade campo a la leyenda con estilo
+                        if (!this.legendCache.journeysLines) {
+                            this.legendCache.journeysLines = true;
+                            const legendStyle =  new Style(
+                                {
+                                    fill: new Fill({ color: 'rgba(0, 0, 255, 0.5)' }),
+                                    stroke: new Stroke({ color: 'rgba(0, 0, 255, 0.5)', width: 2, lineDash: [5, 8]})
+                                }
+                            );
+                            const featureCloneStyle = feature.clone();
+                            featureCloneStyle.setStyle(legendStyle);
+                            this.legend.addRow({ title: 'Trayectos', feature: featureCloneStyle });
+                        }
+                        return new Style({
+                            fill: new Fill({ color: 'rgba(0, 0, 255, 0.5)' }),
+                            stroke: new Stroke({color: 'rgba(0, 0, 255, 0.5)',
+                                                width: Math.log(feature.get('journeys') / 3),
+                                                lineDash: [5, 8]})
+                        });
                     }
-                    return new Style({
-                        fill: new Fill({ color: 'rgba(0, 0, 255, 0.5)' }),
-                        stroke: new Stroke({ color: 'rgba(0, 0, 255, 0.5)', width: Math.log(feature.get('journeys') / 2), lineDash: [5, 8]})
-                    });
+                });
+                for (const element of this.getLayers()['array_']) {
+                    if (element.values_.title === 'Datos') {
+                        journeysTrack.setZIndex(9);
+                        element.values_.layers.array_.push(journeysTrack);
+                    }
                 }
+                this.render();
             });
 
-            let heatLayer = new HeatMapLayer({
-                title: 'Mapa de calor',
-                name: 'journeysHeatMap',
-                visible: true,
-                source: journeysHeatVectorSources,
-                blur: 30,
-                radius: 7,
-                weight(feature) {
-                  return feature.get('journeys');
-                }
-              });
+            new Promise(r => setTimeout(r, 1)).then(() => {
+                // Generating heatMap points source
+                const journeysHeatVectorSources = new OlVectorSource({
+                    features: new OlGeoJSON().readFeatures(geoHeat, {
+                        featureProjection: 'EPSG:3857'
+                    })
+                });
 
-            for (const element of this.getLayers()['array_']) {
-                if (element.values_.title === 'Datos') {
-                    heatLayer.setZIndex(8);
-                    journeysTrack.setZIndex(9);
-                    element.values_.layers.array_.push(journeysTrack);
-                    element.values_.layers.array_.push(heatLayer);
+                let heatLayer = new HeatMapLayer({
+                    title: 'Mapa de calor',
+                    name: 'journeysHeatMap',
+                    visible: true,
+                    source: journeysHeatVectorSources,
+                    opacity: 0.8,
+                    blur: 35,
+                    radius: 6,
+                    weight(feature) {
+                      return feature.get('journeys');
+                    }
+                });
+                for (const element of this.getLayers()['array_']) {
+                    if (element.values_.title === 'Datos') {
+                        heatLayer.setZIndex(8);
+                        element.values_.layers.array_.push(heatLayer);
+                    }
                 }
-            }
-            this.render();
+                new Promise(r => setTimeout(r, 600)).then(() => {
+                    this.render();
+                });
+            });
         })(resDf);
     }
 
