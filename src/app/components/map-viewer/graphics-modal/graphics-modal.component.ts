@@ -26,6 +26,8 @@ export class GraphicsModalComponent implements OnInit {
       this.pricePerKmPerDay();
       this.journeysPerOrigin();
       this.journeysPerDestination();
+      this.pricePerOrigin();
+      this.pricePerDestination();
     });
   }
 
@@ -100,7 +102,7 @@ export class GraphicsModalComponent implements OnInit {
 
     const serie = [];
     const daysLabels = pricesPerDayDf.toArray('DIA');
-    
+
     pricesPerDayDf.toArray('IMP_KM').forEach((priceOneDay, index) => {
       const date = new Date(daysLabels[index].substring(0, 10));
       serie.push({
@@ -232,6 +234,106 @@ export class GraphicsModalComponent implements OnInit {
         Chartist.plugins.ctAxisTitle({
           axisX: {
             axisTitle: 'Viajes',
+            axisClass: 'ct-axis-title',
+            offset: {
+              x: -10,
+              y: 40
+            },
+            textAnchor: 'middle'
+          },
+          axisY: {
+            axisTitle: 'Ciudades',
+            axisClass: 'ct-axis-title',
+            offset: {
+              x: 0,
+              y: 0
+            },
+            textAnchor: 'middle',
+            flipTitle: false
+          }
+        }),
+          Chartist.plugins.tooltip()
+      ]
+    });
+  }
+
+  pricePerOrigin() {
+    const journeysPerDayDf = this.comm.journeysDf.groupBy('ORIGEN_P')
+          .aggregate(group => (group.stat.mean('IMP_KM') * 100)).rename('aggregation', 'IMP_KM')
+          .filter(row => row.get('ORIGEN_P') !== 'Otros')
+          .sortBy('IMP_KM', true);
+
+    this.journeysPerOriginChart = new Chartist.Bar('#pricePerOriginChart', {
+      labels: journeysPerDayDf.head(10).toArray('ORIGEN_P'),
+      series: [journeysPerDayDf.head(10).toArray('IMP_KM')
+      ]
+    }, {
+      chartPadding: {
+        top: 10,
+        right: 35,
+        bottom: 30,
+        left: 30,
+      },
+      reverseData: true,
+      horizontalBars: true,
+      axisY: {
+        offset: 70,
+        labelInterpolationFnc: (value) => value.split('/')[0]
+      },
+      plugins: [
+        Chartist.plugins.ctAxisTitle({
+          axisX: {
+            axisTitle: 'cents. de € / km',
+            axisClass: 'ct-axis-title',
+            offset: {
+              x: -10,
+              y: 40
+            },
+            textAnchor: 'middle'
+          },
+          axisY: {
+            axisTitle: 'Ciudades',
+            axisClass: 'ct-axis-title',
+            offset: {
+              x: 0,
+              y: 0
+            },
+            textAnchor: 'middle',
+            flipTitle: false
+          }
+        }),
+          Chartist.plugins.tooltip()
+      ]
+    });
+  }
+
+  pricePerDestination() {
+    const journeysPerDayDf = this.comm.journeysDf.groupBy('DESTINO_P')
+          .aggregate(group => (group.stat.mean('IMP_KM') * 100)).rename('aggregation', 'IMP_KM')
+          .filter(row => row.get('DESTINO_P') !== 'Otros')
+          .sortBy('IMP_KM', true);
+
+    this.journeysPerOriginChart = new Chartist.Bar('#pricePerDestinationChart', {
+      labels: journeysPerDayDf.head(10).toArray('DESTINO_P'),
+      series: [journeysPerDayDf.head(10).toArray('IMP_KM')
+      ]
+    }, {
+      chartPadding: {
+        top: 10,
+        right: 35,
+        bottom: 30,
+        left: 30,
+      },
+      reverseData: true,
+      horizontalBars: true,
+      axisY: {
+        offset: 70,
+        labelInterpolationFnc: (value) => value.split('/')[0]
+      },
+      plugins: [
+        Chartist.plugins.ctAxisTitle({
+          axisX: {
+            axisTitle: 'cents. de € / km',
             axisClass: 'ct-axis-title',
             offset: {
               x: -10,
