@@ -22,7 +22,8 @@ export class GraphicsModalComponent implements OnInit {
     this.loadingGraphics = true;
     new Promise(r => setTimeout(r, 300)).then(() => {
       this.loadingGraphics = false;
-      // Generando graficos con concurrencia
+
+      // Graphics generation with concurrency
       new Promise(r => setTimeout(r, 1)).then(() => {
         this.journeysPerDay();
         this.pricePerKmPerDay();
@@ -42,10 +43,13 @@ export class GraphicsModalComponent implements OnInit {
     });
   }
 
+  // Checks if it is loading graphics for showing a message
   isLoadingGraphics() {
     return this.loadingGraphics;
   }
 
+  // Graphics code, the name itself identifies the graphics
+  // If reverse in the name, the graphic is descendant
   journeysPerDay() {
     const journeysPerDayDf = this.comm.journeysDf.groupBy('DIA')
           .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS')).rename('aggregation', 'groupCount');

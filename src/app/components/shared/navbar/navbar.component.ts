@@ -8,6 +8,7 @@ import { StatusService } from 'src/app/services/status.service';
 })
 export class NavbarComponent implements OnInit {
 
+  // Checks clicks outside the navbar and closes it if it is opened
   @HostListener('document:click', ['$event'])
   clickout(event) {
     if (!this.eRef.nativeElement.contains(event.target)) {
@@ -21,6 +22,7 @@ export class NavbarComponent implements OnInit {
   ngOnInit() {
   }
 
+  // closes the navbar
   changeTooglerNavbar() {
     if (document.getElementById('navbarSupportedContent').className.includes('show')) {
       document.getElementById('navbar-toogler').click();

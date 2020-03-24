@@ -3,10 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { GenMap } from '../models/gen-map';
 import { globalConfig } from '../modules/globalconfig/globalconfig.module';
 import { transform } from 'ol/proj';
-import { click, pointerMove, altKeyOnly } from 'ol/events/condition';
 import { View } from 'ol';
 import { Subject, Observable } from 'rxjs';
-import { GenSelect } from '../models/customLayers/gen-layers';
 import { CommunicationService } from './communication.service';
 
 @Injectable({
@@ -14,19 +12,14 @@ import { CommunicationService } from './communication.service';
 })
 export class MapServiceService {
 
-  // @Output() toolChanged: EventEmitter<any> = new EventEmitter();
-
   private map: GenMap;
   private opt = {};
-
-  private hoverSelect = null;
-  private hoverLayer = undefined;
 
   public selectionData = new Subject<any>();
 
   constructor( private http: HttpClient, private comm: CommunicationService ) { }
 
-
+  // Generates the map according to the defined model
   generateMap() {
     if (this.opt['view'] === undefined) {
       this.restoreInitialView();
@@ -40,6 +33,7 @@ export class MapServiceService {
     return this.map;
   }
 
+  // set the initial view given a configuration
   setInitialView(lonLat, zoomLevel) {
     this.opt['view'] = new View({
       center: transform(lonLat, 'EPSG:4326', 'EPSG:3857'),
@@ -48,6 +42,7 @@ export class MapServiceService {
     });
   }
 
+  // initial view
   restoreInitialView() {
     this.opt['view'] = new View({
       center: transform([-0.92, 39], 'EPSG:4326', 'EPSG:3857'),
@@ -56,10 +51,12 @@ export class MapServiceService {
     });
   }
 
+  // set the layers manager
   setLayerSwitcher( ) {
     this.getMap().setLayerSwitcher();
   }
 
+  // geocode a given location and set the view on it
   geocodeLocation( criteria ) {
     this.http.get('https://open.mapquestapi.com/nominatim/v1/search.php', {
       params: {

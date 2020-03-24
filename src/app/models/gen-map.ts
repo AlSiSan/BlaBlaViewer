@@ -110,7 +110,10 @@ export class GenMap extends OlMap {
                 new Zoom()
             ]
         });
+
         this.loadPopulation();
+
+        // Generates the layers when it receives the info from the server
         this.comm.journeysDfSubject.asObservable().subscribe(() => {
             // Cargas asínscronas
             this.loadLineJourneys(this.comm.journeysDf);
@@ -122,6 +125,7 @@ export class GenMap extends OlMap {
             });
         });
 
+        // Sets and adds the legend
         this.legend = new Legend({
             title: 'Leyenda',
             style: (feature) => {
@@ -129,7 +133,6 @@ export class GenMap extends OlMap {
             },
             collapsed: false
         });
-
         this.addControl(this.legend);
     }
 
@@ -137,15 +140,18 @@ export class GenMap extends OlMap {
         return this.wmsLegends;
     }
 
+    // sets the layers manager
     setLayerSwitcher( ) {
         const layerSwitcher = new LayerSwitcher();
         this.addControl(layerSwitcher);
     }
 
+    // Returns the view bounding box
     getBboxMap = () => {
         return this.getView().calculateExtent(this.getSize());
     }
 
+    // loads the population layer
     loadPopulation() {
         const tileWMSSource = new TileWMS({
             params: {
@@ -171,6 +177,7 @@ export class GenMap extends OlMap {
         }
     }
 
+    // loads the tracks layers and heat maps
     loadLineJourneys(resDf) {
         ((resDf) => {
             // Datos de viajes confirmados por trayectos
@@ -325,6 +332,7 @@ export class GenMap extends OlMap {
         })(resDf);
     }
 
+    // loads the origin clusters
     loadOriginJourneys(resDf) {
         ((resDf) => {
             let data = resDf.groupBy('ORIGEN_C')
@@ -422,6 +430,7 @@ export class GenMap extends OlMap {
         })(resDf);
     }
 
+    // loads the destination cluster
     loadDestinationJourneys(resDf) {
         ((resDf) => {
             let data = resDf.groupBy('DESTINO_C')

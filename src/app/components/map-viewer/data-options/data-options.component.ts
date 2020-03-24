@@ -16,14 +16,17 @@ export class DataOptionsComponent implements OnInit {
   ngOnInit() {
   }
 
+  // Alerts other components to update
   applyFilters() {
     this.filtersUpdated.emit();
   }
 
+  // Gets the list of provinces
   getProvsOrigin() {
     return this.comm.filterProvincesOrigin;
   }
 
+  // Gets the list of provinces
   getProvsDestination() {
     return this.comm.filterProvincesDestination;
   }

@@ -13,6 +13,7 @@ export class SearchComponent implements OnInit {
   ngOnInit() {
   }
 
+  // Geocode a place name
   search() {
     let value = (<HTMLInputElement>document.getElementById('textSearch')).value;
     this.mapService.geocodeLocation(value);

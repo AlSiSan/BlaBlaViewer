@@ -19,6 +19,7 @@ export class MapSidebarComponent implements OnInit {
     this.defaultClass = document.getElementById('sidebarData').className;
   }
 
+  // closes the sidebar when the user clicks outside
   @HostListener('document:click', ['$event'])
   clickout(event) {
     if (!this.eRef.nativeElement.contains(event.target)) {
@@ -28,6 +29,7 @@ export class MapSidebarComponent implements OnInit {
     }
   }
 
+  // manages the view in the sidebar
   changeTooglerSidebar( type = '' ) {
     if (document.getElementById('sidebarData').className.includes('active') && type !== '') {
       let elementClassName = this.defaultClass.split('active');
@@ -41,14 +43,17 @@ export class MapSidebarComponent implements OnInit {
     }
   }
 
+  // alerts other components when the filters are updated
   onFiltersUpdated() {
     this.filtersUpdated.emit();
   }
 
+  // check if there is communication for showing the graphics or not
   isLoaded() {
     return !this.comm.loading;
   }
 
+  // shows the graphics
   showGraphics() {
     this.comm.graphicsShown = true;
   }

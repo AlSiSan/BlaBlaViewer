@@ -16,6 +16,7 @@ export class MapBottombarComponent implements OnInit {
     this.getDates();
   }
 
+  // Gets date in the current language
   getDates() {
     const date = new Date(this.comm.filterOptions.dateFrom);
     this.dateFrom = date.toLocaleDateString(undefined, {weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric'});

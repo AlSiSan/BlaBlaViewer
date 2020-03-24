@@ -2,12 +2,21 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const turf = require('@turf/turf');
 
+// max concurrent queries
 const num_max_geoCodeReqs = 10;
+
+// number of splitted files of municipalities
 const numList = 6;
+
+// control variables for concurrency
 let waitingFetch = 0;
 let currentReqs = 0;
+
+// results data
 let featuresList = [];
 let json_data = '';
+
+// mapquest api keys
 let apiKey = ['3MhgH4GyfQ0GUNDpse9rHoh8iewHexFk',
     'HacsHpGzBVm1KpBUAACv2A7x2L9AGbSV',
     'Gd4svebgO3xoa4j25JRuHGAe2IQMIpq5',
@@ -28,6 +37,8 @@ let apiKey = ['3MhgH4GyfQ0GUNDpse9rHoh8iewHexFk',
 
 /*
 q: string - Criterio de busqueda
+
+Geocodifica los lugares
 */
 let geoCodeData = (criteria, apiIndex) => {
 
@@ -72,6 +83,7 @@ let geoCodeData = (criteria, apiIndex) => {
     }
 };
 
+// Calls the geocoding function for each municipality
 [...Array(numList).keys()].forEach((num) => {
     json_data = require(`./munList${num+1}.json`);
     waitingFetch += json_data.data.length;

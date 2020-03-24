@@ -10,6 +10,7 @@ export class LayersManagerComponent implements OnInit, OnDestroy {
 
   constructor(private mapService: MapServiceService ) { }
 
+  // Sets the layer switcher in the sidebar
   ngOnInit() {
 
     this.mapService.setLayerSwitcher();
@@ -20,6 +21,7 @@ export class LayersManagerComponent implements OnInit, OnDestroy {
 
   }
 
+  // removes the layerswitcher when destroyed
   ngOnDestroy(): void {
     this.mapService.getMap().getControls().forEach((control) => {
       if (control.constructor.name === 'LayerSwitcher') {

@@ -31,6 +31,7 @@ export class CommunicationService {
   totalDays = 0;
   totalJourneysPerDay = 0;
 
+  // Gets the provinces from the database when starting the service
   constructor( private http: HttpClient ) {
     http.get(`${globalConfig.serverUrl}/getProvincesOrigin`)
       .subscribe((provs: []) => {
@@ -43,6 +44,7 @@ export class CommunicationService {
       });
   }
 
+  // Get geographic info from ddbb for the viewer and graphics
   getJourneysData() {
     this.loading = true;
     return this.http.get(`${globalConfig.serverUrl}/getJourneys`, { params: this.filterOptions })

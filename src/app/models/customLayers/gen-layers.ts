@@ -5,6 +5,12 @@ import VectorTileLayer from 'ol/layer/VectorTile';
 import HeatMap from 'ol/layer/Heatmap';
 import { Select } from 'ol/interaction';
 
+/**
+ * Those are custom layers due to TypeScript restrictions
+ * JavaScript is flexible
+ * TypeScript is typed
+ */
+
 export class GenTileLayer extends OlTileLayer {
     name: string;
     title: string;
