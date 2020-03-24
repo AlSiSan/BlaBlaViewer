@@ -182,14 +182,16 @@ export class GenMap extends OlMap {
         ((resDf) => {
             // Datos de viajes confirmados por trayectos
             let data = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros')
-                            .groupBy('ORIGEN_C', 'DESTINO_C')
-                            .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
-                            .rename('aggregation', 'groupCount')
-                            .filter(row => row.get('groupCount') > 20);
+                            .groupBy('ORIGEN_C', 'DESTINO_C');
 
-            let dataPrice = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros')
-                            .groupBy('ORIGEN_C', 'DESTINO_C')
-                            .aggregate(group => (group.stat.mean('IMP_KM') * 100))
+            let dataTrack = data.aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
+                            .rename('aggregation', 'groupCount');
+
+            let dataTrackMean = dataTrack.stat.mean('groupCount');
+
+            dataTrack = dataTrack.filter(row => row.get('groupCount') >= dataTrackMean);
+
+            let dataPrice = data.aggregate(group => (group.stat.mean('IMP_KM') * 100))
                             .rename('aggregation', 'groupCount');
 
             // Generating geojson format
@@ -207,7 +209,7 @@ export class GenMap extends OlMap {
             };
 
             // Generates the features for the layers
-            data.toArray().forEach((line) => {
+            dataTrack.toArray().forEach((line) => {
                 geoLines.features.push(
                     turf.lineString([line[0].coordinates, line[1].coordinates], {journeys: line[2]})
                 );
