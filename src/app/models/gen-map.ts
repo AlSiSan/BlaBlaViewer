@@ -12,7 +12,7 @@ import { Fill, Stroke, Style, Text, Circle as CircleStyle } from 'ol/style.js';
 
 import { Zoom } from 'ol/control';
 
-import { GenLayerGroup, GenTileLayer, GenVectorLayer, HeatMapLayer } from './customLayers/gen-layers';
+import { GenLayerGroup, GenTileLayer, GenVectorLayer, HeatMapLayer, GenImageLayer } from './customLayers/gen-layers';
 
 import LayerSwitcher from 'ol-layerswitcher';
 
@@ -189,7 +189,7 @@ export class GenMap extends OlMap {
 
             let dataTrackMean = dataTrack.stat.mean('groupCount');
 
-            dataTrack = dataTrack.filter(row => row.get('groupCount') >= dataTrackMean);
+            dataTrack = dataTrack.filter(row => row.get('groupCount') > (dataTrackMean / 2));
 
             let dataPrice = data.aggregate(group => (group.stat.mean('IMP_KM') * 100))
                             .rename('aggregation', 'groupCount');
@@ -238,7 +238,7 @@ export class GenMap extends OlMap {
                     })
                 });
 
-                let journeysTrack = new GenVectorLayer({
+                let journeysTrack = new GenImageLayer({
                     title: 'Trayectos viajes',
                     name: 'ViajesTracks',
                     visible: true,
@@ -291,7 +291,7 @@ export class GenMap extends OlMap {
                     source: journeysHeatVectorSources,
                     opacity: 0.8,
                     blur: 35,
-                    radius: 5,
+                    radius: 3.5,
                     weight(feature) {
                       return feature.get('journeys');
                     }

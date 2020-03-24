@@ -2,6 +2,7 @@ import OlVectorLayer from 'ol/layer/Vector.js';
 import OlTileLayer from 'ol/layer/Tile';
 import OlLayerGroup from 'ol/layer/Group';
 import VectorTileLayer from 'ol/layer/VectorTile';
+import VectorImageLayer from 'ol/layer/VectorImage';
 import HeatMap from 'ol/layer/Heatmap';
 import { Select } from 'ol/interaction';
 
@@ -10,6 +11,14 @@ import { Select } from 'ol/interaction';
  * JavaScript is flexible
  * TypeScript is typed
  */
+
+export class GenImageLayer extends VectorImageLayer  {
+    name: string;
+    title: string;
+    constructor( params ) {
+        super( params );
+    }
+}
 
 export class GenTileLayer extends OlTileLayer {
     name: string;
