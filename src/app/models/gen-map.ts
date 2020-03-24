@@ -182,7 +182,7 @@ export class GenMap extends OlMap {
 
             let dataPrice = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros')
                             .groupBy('ORIGEN_C', 'DESTINO_C')
-                            .aggregate(group => group.stat.mean('IMP_KM'))
+                            .aggregate(group => (group.stat.mean('IMP_KM') * 100))
                             .rename('aggregation', 'groupCount');
 
             // Generating geojson format
@@ -302,8 +302,8 @@ export class GenMap extends OlMap {
                     visible: false,
                     source: priceHeatVectorSources,
                     opacity: 0.8,
-                    blur: 30,
-                    radius: 8,
+                    blur: 35,
+                    radius: 2,
                     weight(feature) {
                       return feature.get('price');
                     }
