@@ -175,11 +175,11 @@ export class GenMap extends OlMap {
         ((resDf) => {
             let data = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros')
                             .groupBy('ORIGEN_C', 'DESTINO_C')
-                            .aggregate(group => group.count())
+                            .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
                             .rename('aggregation', 'groupCount')
-                            .filter(row => row.get('groupCount') > 5);
+                            .filter(row => row.get('groupCount') > 20);
 
-            // Generating points from polygons for cluster
+            // Generating geojson format
             const geoLines = {
                 type: 'FeatureCollection',
                 features: []
@@ -189,6 +189,7 @@ export class GenMap extends OlMap {
                 features: []
             };
 
+            // Generates the features for the layers
             data.toArray().forEach((line) => {
                 geoLines.features.push(
                     turf.lineString([line[0].coordinates, line[1].coordinates], {journeys: line[2]})
@@ -231,7 +232,7 @@ export class GenMap extends OlMap {
                         return new Style({
                             fill: new Fill({ color: 'rgba(0, 0, 255, 0.5)' }),
                             stroke: new Stroke({color: 'rgba(0, 0, 255, 0.5)',
-                                                width: Math.log(feature.get('journeys') / 3),
+                                                width: Math.log(feature.get('journeys') / 4),
                                                 lineDash: [5, 8]})
                         });
                     }
@@ -245,6 +246,7 @@ export class GenMap extends OlMap {
                 this.render();
             });
 
+            // Generates heatmap layer
             new Promise(r => setTimeout(r, 1)).then(() => {
                 // Generating heatMap points source
                 const journeysHeatVectorSources = new OlVectorSource({
@@ -253,6 +255,7 @@ export class GenMap extends OlMap {
                     })
                 });
 
+                // Generated layer
                 let heatLayer = new HeatMapLayer({
                     title: 'Mapa de calor',
                     name: 'journeysHeatMap',
@@ -265,13 +268,15 @@ export class GenMap extends OlMap {
                       return feature.get('journeys');
                     }
                 });
+
+                // Adding heatmap layer to group Datos
                 for (const element of this.getLayers()['array_']) {
                     if (element.values_.title === 'Datos') {
                         heatLayer.setZIndex(8);
                         element.values_.layers.array_.push(heatLayer);
                     }
                 }
-                new Promise(r => setTimeout(r, 600)).then(() => {
+                new Promise(r => setTimeout(r, 800)).then(() => {
                     this.render();
                 });
             });
@@ -281,7 +286,7 @@ export class GenMap extends OlMap {
     loadOriginJourneys(resDf) {
         ((resDf) => {
             let data = resDf.groupBy('ORIGEN_C')
-                            .aggregate(group => group.count())
+                            .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
                             .rename('aggregation', 'groupCount');
 
             // Generating points from polygons for cluster
@@ -378,7 +383,7 @@ export class GenMap extends OlMap {
     loadDestinationJourneys(resDf) {
         ((resDf) => {
             let data = resDf.groupBy('DESTINO_C')
-                            .aggregate(group => group.count())
+                            .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
                             .rename('aggregation', 'groupCount');
 
             // Generating points from polygons for cluster

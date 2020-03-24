@@ -37,7 +37,7 @@ export class GraphicsModalComponent implements OnInit {
 
   journeysPerDay() {
     const journeysPerDayDf = this.comm.journeysDf.groupBy('DIA')
-          .aggregate(group => group.count()).rename('aggregation', 'groupCount');
+          .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS')).rename('aggregation', 'groupCount');
 
     const serie = [];
     const daysLabels = journeysPerDayDf.toArray('DIA');
@@ -159,7 +159,7 @@ export class GraphicsModalComponent implements OnInit {
 
   journeysPerOrigin() {
     const journeysPerDayDf = this.comm.journeysDf.groupBy('ORIGEN_P')
-          .aggregate(group => group.count()).rename('aggregation', 'groupCount')
+          .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS')).rename('aggregation', 'groupCount')
           .filter(row => row.get('ORIGEN_P') !== 'Otros')
           .sortBy('groupCount', true);
 
@@ -209,7 +209,7 @@ export class GraphicsModalComponent implements OnInit {
 
   journeysPerDestination() {
     const journeysPerDayDf = this.comm.journeysDf.groupBy('DESTINO_P')
-          .aggregate(group => group.count()).rename('aggregation', 'groupCount')
+          .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS')).rename('aggregation', 'groupCount')
           .filter(row => row.get('DESTINO_P') !== 'Otros')
           .sortBy('groupCount', true);
 

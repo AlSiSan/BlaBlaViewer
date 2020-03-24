@@ -53,7 +53,9 @@ export class CommunicationService {
         this.totalJourneys = this.journeysDf.count();
 
         // Grouping by Days
-        const groupedDF = this.journeysDf.groupBy('DIA').aggregate(group => group.count()).rename('aggregation', 'groupCount');
+        const groupedDF = this.journeysDf.groupBy('DIA')
+                                         .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
+                                         .rename('aggregation', 'groupCount');
         this.totalJourneysPerDay = groupedDF.stat.mean('groupCount').toFixed(2);
         this.totalDays = groupedDF.count();
 
