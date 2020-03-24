@@ -173,18 +173,28 @@ export class GenMap extends OlMap {
 
     loadLineJourneys(resDf) {
         ((resDf) => {
+            // Datos de viajes confirmados por trayectos
             let data = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros')
                             .groupBy('ORIGEN_C', 'DESTINO_C')
                             .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
                             .rename('aggregation', 'groupCount')
                             .filter(row => row.get('groupCount') > 20);
 
+            let dataPrice = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros')
+                            .groupBy('ORIGEN_C', 'DESTINO_C')
+                            .aggregate(group => group.stat.mean('IMP_KM'))
+                            .rename('aggregation', 'groupCount');
+
             // Generating geojson format
             const geoLines = {
                 type: 'FeatureCollection',
                 features: []
             };
-            const geoHeat = {
+            const geoHeatJourneys = {
+                type: 'FeatureCollection',
+                features: []
+            };
+            const geoHeatPrice = {
                 type: 'FeatureCollection',
                 features: []
             };
@@ -194,11 +204,20 @@ export class GenMap extends OlMap {
                 geoLines.features.push(
                     turf.lineString([line[0].coordinates, line[1].coordinates], {journeys: line[2]})
                 );
-                geoHeat.features.push(
+                geoHeatJourneys.features.push(
                     turf.point(line[0].coordinates, {journeys: line[2]})
                 );
-                geoHeat.features.push(
+                geoHeatJourneys.features.push(
                     turf.point(line[1].coordinates, {journeys: line[2]})
+                );
+            });
+
+            dataPrice.toArray().forEach((line) => {
+                geoHeatPrice.features.push(
+                    turf.point(line[0].coordinates, {price: line[2]})
+                );
+                geoHeatPrice.features.push(
+                    turf.point(line[1].coordinates, {price: line[2]})
                 );
             });
 
@@ -248,24 +267,45 @@ export class GenMap extends OlMap {
 
             // Generates heatmap layer
             new Promise(r => setTimeout(r, 1)).then(() => {
-                // Generating heatMap points source
+                // Generating heatMap points source for journeys
                 const journeysHeatVectorSources = new OlVectorSource({
-                    features: new OlGeoJSON().readFeatures(geoHeat, {
+                    features: new OlGeoJSON().readFeatures(geoHeatJourneys, {
                         featureProjection: 'EPSG:3857'
                     })
                 });
 
-                // Generated layer
+                // Generated layer heatmap for journeys
                 let heatLayer = new HeatMapLayer({
-                    title: 'Mapa de calor',
+                    title: 'Mapa de calor viajes',
                     name: 'journeysHeatMap',
                     visible: true,
                     source: journeysHeatVectorSources,
                     opacity: 0.8,
                     blur: 35,
-                    radius: 6,
+                    radius: 5,
                     weight(feature) {
                       return feature.get('journeys');
+                    }
+                });
+
+                // Generating heatMap points source for journeys
+                const priceHeatVectorSources = new OlVectorSource({
+                    features: new OlGeoJSON().readFeatures(geoHeatPrice, {
+                        featureProjection: 'EPSG:3857'
+                    })
+                });
+
+                // Generated layer heatmap for journeys
+                let heatPriceLayer = new HeatMapLayer({
+                    title: 'Mapa de calor precio',
+                    name: 'journeysHeatMap',
+                    visible: false,
+                    source: priceHeatVectorSources,
+                    opacity: 0.8,
+                    blur: 30,
+                    radius: 8,
+                    weight(feature) {
+                      return feature.get('price');
                     }
                 });
 
@@ -274,6 +314,8 @@ export class GenMap extends OlMap {
                     if (element.values_.title === 'Datos') {
                         heatLayer.setZIndex(8);
                         element.values_.layers.array_.push(heatLayer);
+                        heatPriceLayer.setZIndex(8);
+                        element.values_.layers.array_.push(heatPriceLayer);
                     }
                 }
                 new Promise(r => setTimeout(r, 800)).then(() => {
