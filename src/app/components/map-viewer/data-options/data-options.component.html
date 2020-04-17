@@ -18,7 +18,7 @@
         </select>
     </div>
     <div class="form-group my-2">
-        <label class="text-white" for="query-to">País origen:</label>
+        <label class="text-white" for="country-origin">País origen:</label>
         <select #countryFrom name="country-origin" [ngModel]="comm.filterOptions.countryFrom" (ngModelChange)="comm.filterOptions.countryFrom=countryFrom.value" class="custom-select">
             <option value=""></option>
             <option value="ES">España</option>
@@ -26,7 +26,7 @@
         </select>
     </div>
     <div class="form-group my-2">
-        <label class="text-white" for="query-to">País destino:</label>
+        <label class="text-white" for="country-destination">País destino:</label>
         <select #countryTo name="country-destination" [ngModel]="comm.filterOptions.countryTo" (ngModelChange)="comm.filterOptions.countryTo=countryTo.value" class="custom-select">
             <option value=""></option>
             <option value="ES">España</option>
@@ -34,18 +34,24 @@
         </select>
     </div>
     <div class="form-group my-2">
-        <label class="text-white" for="query-to">Provincia origen:</label>
+        <label class="text-white" for="province-origin">Provincia origen:</label>
         <select #provinceFrom name="province-origin" [ngModel]="comm.filterOptions.provinceFrom" (ngModelChange)="comm.filterOptions.provinceFrom=provinceFrom.value" class="custom-select">
             <option value=""></option>
             <option *ngFor="let prov of getProvsOrigin()" value="{{prov}}">{{prov}}</option>
         </select>
     </div>
     <div class="form-group my-2">
-        <label class="text-white" for="query-to">Provincia destino:</label>
+        <label class="text-white" for="province-destination">Provincia destino:</label>
         <select #provinceTo name="province-destination" [ngModel]="comm.filterOptions.provinceTo" (ngModelChange)="comm.filterOptions.provinceTo=provinceTo.value" class="custom-select">
             <option value=""></option>
             <option *ngFor="let prov of getProvsDestination()" value="{{prov}}">{{prov}}</option>
         </select>
+    </div>
+    <div class="form-group my-2">
+        <label class="text-white" for="minimum-occupancy">Ocupación mínima (%)</label>
+        <input #minOccR name="minimum-occupancy" [ngModel]="comm.filterOptions.minOccR * 100" (ngModelChange)="comm.filterOptions.minOccR=minOccR.value/100" class="form-control" type="number" min="0" max="100" step="10">
+        <label class="text-white" for="maximum-occupancy">Ocupación máxima (%)</label>
+        <input #maxOccR name="maximum-occupancy" [ngModel]="comm.filterOptions.maxOccR * 100" (ngModelChange)="comm.filterOptions.provinceTo=maxOccR.value/100" class="form-control" type="number" min="0" max="100" step="10">
     </div>
 
 </form>

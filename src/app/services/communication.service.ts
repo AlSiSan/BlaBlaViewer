@@ -1,9 +1,22 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { globalConfig } from '../modules/globalconfig/globalconfig.module';
 import { map } from 'rxjs/operators';
 import { DataFrame } from 'dataframe-js/';
 import { Subject } from 'rxjs';
+
+export class UtilsService {
+  static buildQueryParams(source: Object): HttpParams {
+      let target: HttpParams = new HttpParams();
+      Object.keys(source).forEach((key: string) => {
+          const value: string | number | boolean | Date = source[key];
+          if ((typeof value !== 'undefined') && (value !== null)) {
+              target = target.append(key, value.toString());
+          }
+      });
+      return target;
+  }
+}
 
 @Injectable({
   providedIn: 'root'
@@ -15,11 +28,13 @@ export class CommunicationService {
 
   filterOptions = {
     dateFrom: '2017-11-01',
-    monthsNum: '1',
+    monthsNum: 1,
     countryFrom: '',
     countryTo: '',
     provinceFrom: '',
-    provinceTo: ''
+    provinceTo: '',
+    minOccR: 0,
+    maxOccR: 1
   };
 
   filterProvincesOrigin = [];
@@ -47,7 +62,7 @@ export class CommunicationService {
   // Get geographic info from ddbb for the viewer and graphics
   getJourneysData() {
     this.loading = true;
-    return this.http.get(`${globalConfig.serverUrl}/getJourneys`, { params: this.filterOptions })
+    return this.http.get(`${globalConfig.serverUrl}/getJourneys`, { params: UtilsService.buildQueryParams(this.filterOptions) })
       .pipe(map((journeys) => {
         // this.journeys = journeys;
         this.journeysDf = new DataFrame(journeys);
