@@ -51,7 +51,7 @@
         <label class="text-white" for="minimum-occupancy">Ocupación mínima (%)</label>
         <input #minOccR name="minimum-occupancy" [ngModel]="comm.filterOptions.minOccR * 100" (ngModelChange)="comm.filterOptions.minOccR=minOccR.value/100" class="form-control" type="number" min="0" max="100" step="10">
         <label class="text-white" for="maximum-occupancy">Ocupación máxima (%)</label>
-        <input #maxOccR name="maximum-occupancy" [ngModel]="comm.filterOptions.maxOccR * 100" (ngModelChange)="comm.filterOptions.provinceTo=maxOccR.value/100" class="form-control" type="number" min="0" max="100" step="10">
+        <input #maxOccR name="maximum-occupancy" [ngModel]="comm.filterOptions.maxOccR * 100" (ngModelChange)="comm.filterOptions.maxOccR=maxOccR.value/100" class="form-control" type="number" min="0" max="100" step="10">
     </div>
 
 </form>
