@@ -8,7 +8,7 @@ import OlXYZ from 'ol/source/XYZ';
 import OlOSM from 'ol/source/OSM';
 import TileWMS from 'ol/source/TileWMS';
 
-import { Fill, Stroke, Style, Text, Circle as CircleStyle } from 'ol/style.js';
+import { Fill, Stroke, Style, Text, Circle as CircleStyle, RegularShape } from 'ol/style.js';
 
 import { Zoom } from 'ol/control';
 
@@ -39,7 +39,8 @@ export class GenMap extends OlMap {
     legendCache = {
         origenC: false,
         destinationC: false,
-        journeysLines: false
+        journeysLines: false,
+        heatPrice: false
     };
 
     constructor( private comm: CommunicationService, opt? ) {
@@ -179,6 +180,7 @@ export class GenMap extends OlMap {
             let data = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros');
 
             const dataTrackMean = data.stat.mean('VIAJES_CONFIRMADOS');
+            const dataPriceMean = data.stat.mean('IMP_KM') * 100;
 
             data = data.filter(row => row.get('VIAJES_CONFIRMADOS') > (dataTrackMean / 4));
 
@@ -258,11 +260,21 @@ export class GenMap extends OlMap {
                     })
                 });
 
+                // Generating Cluster
+                const clusterPrice = new Cluster({
+                    distance: 30,
+                    source: new OlVectorSource({
+                        features: new OlGeoJSON().readFeatures(geoHeat, {
+                            featureProjection: 'EPSG:3857'
+                        })
+                    })
+                });
+
                 // Generated layer heatmap for journeys
                 let heatLayer = new HeatMapLayer({
                     title: 'Mapa de calor viajes',
                     name: 'journeysHeatMap',
-                    visible: true,
+                    visible: false,
                     source: heatVectorSources,
                     opacity: 0.8,
                     blur: 30,
@@ -272,19 +284,60 @@ export class GenMap extends OlMap {
                     }
                 });
 
-                // Generated layer heatmap for price
-                let heatPriceLayer = new HeatMapLayer({
+                let heatPriceLayer = new GenVectorLayer({
                     title: 'Mapa de calor precio',
                     name: 'journeysHeatMap',
-                    visible: false,
-                    source: heatVectorSources,
-                    opacity: 0.8,
-                    blur: 20,
-                    radius: 5,
-                    weight(feature) {
-                      return feature.get('price') / feature.get('journeys') * 1000;
+                    visible: true,
+                    source: clusterPrice,
+                    style: (feature) => {
+                        let priceMean = feature.getProperties().features.reduce((acc, feature) => {
+                            return acc + feature.getProperties().price;
+                        }, 0) / feature.getProperties().features.length;
+
+                        // Añade campo a la leyenda con estilo
+                        if (!this.legendCache.heatPrice) {
+                            this.legendCache.heatPrice = true;
+                            const legendStyle = new Style({
+                                image: new RegularShape({
+                                    points: 3,
+                                    radius: 15,
+                                    rotation: 0,
+                                    stroke: new Stroke({
+                                        color: '#fff'
+                                    }),
+                                    fill: new Fill({
+                                        color: '#ffff44'
+                                    }),
+                                    angle: 0
+                                })
+                            });
+                            const featureCloneStyle = feature.clone();
+                            featureCloneStyle.setStyle(legendStyle);
+                            this.legend.addRow({ title: 'Precio (cents. € / km)', feature: featureCloneStyle });
+                        }
+
+                        return new Style({
+                            image: new RegularShape({
+                                points: 3,
+                                radius: 25,
+                                rotation: priceMean > dataPriceMean ? 0 : Math.PI / 3,
+                                stroke: new Stroke({
+                                    color: '#fff'
+                                }),
+                                fill: new Fill({
+                                    color: priceMean > dataPriceMean ? 'rgba(255, 0, 0, 0.5)' : 'rgba(47, 200, 56, 0.7)'
+                                })
+                            }),
+                            text: new Text({
+                                text: priceMean.toFixed(2),
+                                fill: new Fill({
+                                    color: '#fff'
+                                })
+                            })
+                        });
                     }
                 });
+    
 
                 // Adding heatmap layer to group Datos
                 for (const element of this.getLayers()['array_']) {
