@@ -43,13 +43,12 @@ export class GraphicsModalComponent implements OnInit {
   // Graphics code, the name itself identifies the graphics
   // If reverse in the name, the graphic is descendant
   journeysPerDay() {
-    const journeysPerDayDf = this.comm.journeysDf.groupBy('DIA')
-          .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS')).rename('aggregation', 'groupCount');
+    const journeysPerDayDf = this.comm.dataPerDayDf;
 
     const serie = [];
     const daysLabels = journeysPerDayDf.toArray('DIA');
 
-    journeysPerDayDf.toArray('groupCount').forEach((journeysOneDay, index) => {
+    journeysPerDayDf.toArray('VIAJES_CONFIRMADOS').forEach((journeysOneDay, index) => {
       const date = new Date(daysLabels[index].substring(0, 10));
       serie.push({
         meta: date.toLocaleDateString(undefined, {weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric'}),
@@ -104,8 +103,7 @@ export class GraphicsModalComponent implements OnInit {
   }
 
   pricePerKmPerDay() {
-    const pricesPerDayDf = this.comm.journeysDf.groupBy('DIA')
-                          .aggregate(group => (group.stat.mean('IMP_KM') * 100)).rename('aggregation', 'IMP_KM');
+    const pricesPerDayDf = this.comm.dataPerDayDf;
 
     const serie = [];
     const daysLabels = pricesPerDayDf.toArray('DIA');
@@ -114,7 +112,7 @@ export class GraphicsModalComponent implements OnInit {
       const date = new Date(daysLabels[index].substring(0, 10));
       serie.push({
         meta: date.toLocaleDateString(undefined, {weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric'}),
-        value: priceOneDay
+        value: priceOneDay * 100
       });
     });
 
@@ -165,14 +163,13 @@ export class GraphicsModalComponent implements OnInit {
   }
 
   journeysPerOrigin() {
-    let journeysPerDayDf = this.comm.journeysDf.groupBy('ORIGEN_P')
-          .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS')).rename('aggregation', 'groupCount')
+    let journeysPerDayDf = this.comm.dataPerOriginDf
           .filter(row => row.get('ORIGEN_P') !== 'Otros')
-          .sortBy('groupCount', true);
+          .sortBy('VIAJES_CONFIRMADOS', true);
 
     this.journeysPerOriginChart = new Chartist.Bar('#journeysPerOriginChart', {
       labels: journeysPerDayDf.head(10).toArray('ORIGEN_P'),
-      series: [journeysPerDayDf.head(10).toArray('groupCount')
+      series: [journeysPerDayDf.head(10).toArray('VIAJES_CONFIRMADOS')
       ]
     }, {
       chartPadding: {
@@ -213,10 +210,10 @@ export class GraphicsModalComponent implements OnInit {
       ]
     });
 
-    journeysPerDayDf = journeysPerDayDf.sortBy('groupCount');
+    journeysPerDayDf = journeysPerDayDf.sortBy('VIAJES_CONFIRMADOS');
     this.journeysPerOriginChart = new Chartist.Bar('#journeysPerOriginChartRev', {
       labels: journeysPerDayDf.head(10).toArray('ORIGEN_P'),
-      series: [journeysPerDayDf.head(10).toArray('groupCount')
+      series: [journeysPerDayDf.head(10).toArray('VIAJES_CONFIRMADOS')
       ]
     }, {
       chartPadding: {
@@ -259,14 +256,13 @@ export class GraphicsModalComponent implements OnInit {
   }
 
   journeysPerDestination() {
-    let journeysPerDayDf = this.comm.journeysDf.groupBy('DESTINO_P')
-          .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS')).rename('aggregation', 'groupCount')
+    let journeysPerDayDf = this.comm.dataPerDestinationDf
           .filter(row => row.get('DESTINO_P') !== 'Otros')
-          .sortBy('groupCount', true);
+          .sortBy('VIAJES_CONFIRMADOS', true);
 
     this.journeysPerOriginChart = new Chartist.Bar('#journeysPerDestinationChart', {
       labels: journeysPerDayDf.head(10).toArray('DESTINO_P'),
-      series: [journeysPerDayDf.head(10).toArray('groupCount')
+      series: [journeysPerDayDf.head(10).toArray('VIAJES_CONFIRMADOS')
       ]
     }, {
       chartPadding: {
@@ -307,11 +303,11 @@ export class GraphicsModalComponent implements OnInit {
       ]
     });
 
-    journeysPerDayDf = journeysPerDayDf.sortBy('groupCount');
+    journeysPerDayDf = journeysPerDayDf.sortBy('VIAJES_CONFIRMADOS');
 
     this.journeysPerOriginChart = new Chartist.Bar('#journeysPerDestinationChartRev', {
       labels: journeysPerDayDf.head(10).toArray('DESTINO_P'),
-      series: [journeysPerDayDf.head(10).toArray('groupCount')
+      series: [journeysPerDayDf.head(10).toArray('VIAJES_CONFIRMADOS')
       ]
     }, {
       chartPadding: {
@@ -354,18 +350,16 @@ export class GraphicsModalComponent implements OnInit {
   }
 
   pricePerOrigin() {
-    let journeysPerDayDf = this.comm.journeysDf.groupBy('ORIGEN_P')
-          .aggregate(group => (group.stat.mean('IMP_KM') * 100)).rename('aggregation', 'IMP_KM')
+    let journeysPerDayDf = this.comm.dataPerOriginDf
           .filter(row => row.get('ORIGEN_P') !== 'Otros')
           .sortBy('IMP_KM', true);
 
-    let lowValue = journeysPerDayDf.head(10).stat.min('IMP_KM');
-    let highValue = journeysPerDayDf.head(10).stat.max('IMP_KM');
+    let lowValue = journeysPerDayDf.head(10).stat.min('IMP_KM') * 100;
+    let highValue = journeysPerDayDf.head(10).stat.max('IMP_KM') * 100;
 
     this.journeysPerOriginChart = new Chartist.Bar('#pricePerOriginChart', {
       labels: journeysPerDayDf.head(10).toArray('ORIGEN_P'),
-      series: [journeysPerDayDf.head(10).toArray('IMP_KM')
-      ]
+      series: [journeysPerDayDf.head(10).toArray('IMP_KM').map((price) => price * 100)]
     }, {
       chartPadding: {
         top: 10,
@@ -409,13 +403,12 @@ export class GraphicsModalComponent implements OnInit {
 
     journeysPerDayDf = journeysPerDayDf.sortBy('IMP_KM');
 
-    lowValue = journeysPerDayDf.head(10).stat.min('IMP_KM');
-    highValue = journeysPerDayDf.head(10).stat.max('IMP_KM');
+    lowValue = journeysPerDayDf.head(10).stat.min('IMP_KM') * 100;
+    highValue = journeysPerDayDf.head(10).stat.max('IMP_KM') * 100;
 
     this.journeysPerOriginChart = new Chartist.Bar('#pricePerOriginChartRev', {
       labels: journeysPerDayDf.head(10).toArray('ORIGEN_P'),
-      series: [journeysPerDayDf.head(10).toArray('IMP_KM')
-      ]
+      series: [journeysPerDayDf.head(10).toArray('IMP_KM').map((price) => price * 100)]
     }, {
       chartPadding: {
         top: 10,
@@ -459,18 +452,16 @@ export class GraphicsModalComponent implements OnInit {
   }
 
   pricePerDestination() {
-    let journeysPerDayDf = this.comm.journeysDf.groupBy('DESTINO_P')
-          .aggregate(group => (group.stat.mean('IMP_KM') * 100)).rename('aggregation', 'IMP_KM')
+    let journeysPerDayDf = this.comm.dataPerDestinationDf
           .filter(row => row.get('DESTINO_P') !== 'Otros')
           .sortBy('IMP_KM', true);
 
-    let lowValue = journeysPerDayDf.head(10).stat.min('IMP_KM');
-    let highValue = journeysPerDayDf.head(10).stat.max('IMP_KM');
+    let lowValue = journeysPerDayDf.head(10).stat.min('IMP_KM') * 100;
+    let highValue = journeysPerDayDf.head(10).stat.max('IMP_KM') * 100;
 
     this.journeysPerOriginChart = new Chartist.Bar('#pricePerDestinationChart', {
       labels: journeysPerDayDf.head(10).toArray('DESTINO_P'),
-      series: [journeysPerDayDf.head(10).toArray('IMP_KM')
-      ]
+      series: [journeysPerDayDf.head(10).toArray('IMP_KM').map((price) => price * 100)]
     }, {
       chartPadding: {
         top: 10,
@@ -514,13 +505,12 @@ export class GraphicsModalComponent implements OnInit {
 
     journeysPerDayDf = journeysPerDayDf.sortBy('IMP_KM');
 
-    lowValue = journeysPerDayDf.head(10).stat.min('IMP_KM');
-    highValue = journeysPerDayDf.head(10).stat.max('IMP_KM');
+    lowValue = journeysPerDayDf.head(10).stat.min('IMP_KM') * 100;
+    highValue = journeysPerDayDf.head(10).stat.max('IMP_KM') * 100;
 
     this.journeysPerOriginChart = new Chartist.Bar('#pricePerDestinationChartRev', {
       labels: journeysPerDayDf.head(10).toArray('DESTINO_P'),
-      series: [journeysPerDayDf.head(10).toArray('IMP_KM')
-      ]
+      series: [journeysPerDayDf.head(10).toArray('IMP_KM').map((price) => price * 100)]
     }, {
       chartPadding: {
         top: 10,

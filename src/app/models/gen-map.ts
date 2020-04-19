@@ -114,15 +114,10 @@ export class GenMap extends OlMap {
         this.loadPopulation();
 
         // Generates the layers when it receives the info from the server
-        this.comm.journeysDfSubject.asObservable().subscribe(() => {
-            // Cargas asínscronas
-            this.loadLineJourneys(this.comm.journeysDf);
-            new Promise(r => setTimeout(r, 1)).then(() => {
-                this.loadOriginJourneys(this.comm.journeysDf);
-            });
-            new Promise(r => setTimeout(r, 1)).then(() => {
-                this.loadDestinationJourneys(this.comm.journeysDf);
-            });
+        this.comm.dataPerTrackSubject.asObservable().subscribe(() => {
+            this.loadLineJourneys(this.comm.dataPerTrackDf);
+            this.loadOriginJourneys(this.comm.dataPerTrackDf);
+            this.loadDestinationJourneys(this.comm.dataPerTrackDf);
         });
 
         // Sets and adds the legend
@@ -181,52 +176,32 @@ export class GenMap extends OlMap {
     loadLineJourneys(resDf) {
         ((resDf) => {
             // Datos de viajes confirmados por trayectos
-            let data = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros')
-                            .groupBy('ORIGEN_C', 'DESTINO_C');
+            let data = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros' && row.get('DESTINO_P') !== 'Otros');
 
-            let dataTrack = data.aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
-                            .rename('aggregation', 'groupCount');
+            const dataTrackMean = data.stat.mean('VIAJES_CONFIRMADOS');
 
-            let dataTrackMean = dataTrack.stat.mean('groupCount');
-
-            dataTrack = dataTrack.filter(row => row.get('groupCount') > (dataTrackMean / 2));
-
-            let dataPrice = data.aggregate(group => (group.stat.mean('IMP_KM') * 100))
-                            .rename('aggregation', 'groupCount');
+            data = data.filter(row => row.get('VIAJES_CONFIRMADOS') > (dataTrackMean / 4));
 
             // Generating geojson format
             const geoLines = {
                 type: 'FeatureCollection',
                 features: []
             };
-            const geoHeatJourneys = {
-                type: 'FeatureCollection',
-                features: []
-            };
-            const geoHeatPrice = {
+            const geoHeat = {
                 type: 'FeatureCollection',
                 features: []
             };
 
             // Generates the features for the layers
-            dataTrack.toArray().forEach((line) => {
+            data.toArray().forEach((line) => {
                 geoLines.features.push(
                     turf.lineString([line[0].coordinates, line[1].coordinates], {journeys: line[2]})
                 );
-                geoHeatJourneys.features.push(
-                    turf.point(line[0].coordinates, {journeys: line[2]})
+                geoHeat.features.push(
+                    turf.point(line[0].coordinates, {price: line[4] * 100, journeys: line[5]})
                 );
-                geoHeatJourneys.features.push(
-                    turf.point(line[1].coordinates, {journeys: line[2]})
-                );
-            });
-
-            dataPrice.toArray().forEach((line) => {
-                geoHeatPrice.features.push(
-                    turf.point(line[0].coordinates, {price: line[2]})
-                );
-                geoHeatPrice.features.push(
-                    turf.point(line[1].coordinates, {price: line[2]})
+                geoHeat.features.push(
+                    turf.point(line[1].coordinates, {price: line[4] * 100, journeys: line[5]})
                 );
             });
 
@@ -276,9 +251,9 @@ export class GenMap extends OlMap {
 
             // Generates heatmap layer
             new Promise(r => setTimeout(r, 1)).then(() => {
-                // Generating heatMap points source for journeys
-                const journeysHeatVectorSources = new OlVectorSource({
-                    features: new OlGeoJSON().readFeatures(geoHeatJourneys, {
+                // Generating heatMaps points
+                const heatVectorSources = new OlVectorSource({
+                    features: new OlGeoJSON().readFeatures(geoHeat, {
                         featureProjection: 'EPSG:3857'
                     })
                 });
@@ -287,34 +262,27 @@ export class GenMap extends OlMap {
                 let heatLayer = new HeatMapLayer({
                     title: 'Mapa de calor viajes',
                     name: 'journeysHeatMap',
-                    visible: true,
-                    source: journeysHeatVectorSources,
+                    visible: false,
+                    source: heatVectorSources,
                     opacity: 0.8,
-                    blur: 35,
-                    radius: 3.5,
+                    blur: 30,
+                    radius: 5,
                     weight(feature) {
                       return feature.get('journeys');
                     }
                 });
 
-                // Generating heatMap points source for journeys
-                const priceHeatVectorSources = new OlVectorSource({
-                    features: new OlGeoJSON().readFeatures(geoHeatPrice, {
-                        featureProjection: 'EPSG:3857'
-                    })
-                });
-
-                // Generated layer heatmap for journeys
+                // Generated layer heatmap for price
                 let heatPriceLayer = new HeatMapLayer({
                     title: 'Mapa de calor precio',
                     name: 'journeysHeatMap',
-                    visible: false,
-                    source: priceHeatVectorSources,
+                    visible: true,
+                    source: heatVectorSources,
                     opacity: 0.8,
-                    blur: 35,
-                    radius: 2,
+                    blur: 20,
+                    radius: 5,
                     weight(feature) {
-                      return feature.get('price');
+                      return feature.get('price') / feature.get('journeys') * 1000;
                     }
                 });
 
@@ -337,7 +305,8 @@ export class GenMap extends OlMap {
     // loads the origin clusters
     loadOriginJourneys(resDf) {
         ((resDf) => {
-            let data = resDf.groupBy('ORIGEN_C')
+            let data = resDf.filter(row => row.get('ORIGEN_P') !== 'Otros')
+                            .groupBy('ORIGEN_C')
                             .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
                             .rename('aggregation', 'groupCount');
 
@@ -435,7 +404,8 @@ export class GenMap extends OlMap {
     // loads the destination cluster
     loadDestinationJourneys(resDf) {
         ((resDf) => {
-            let data = resDf.groupBy('DESTINO_C')
+            let data = resDf.filter(row => row.get('DESTINO_P') !== 'Otros')
+                            .groupBy('DESTINO_C')
                             .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
                             .rename('aggregation', 'groupCount');
 

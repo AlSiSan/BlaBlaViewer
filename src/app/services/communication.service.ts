@@ -40,8 +40,16 @@ export class CommunicationService {
   filterProvincesOrigin = [];
   filterProvincesDestination = [];
 
-  journeysDf: DataFrame;
-  journeysDfSubject = new Subject<any>();
+  dataPerDayDf: DataFrame;
+  dataPerOriginDf: DataFrame;
+  dataPerDestinationDf: DataFrame;
+  dataPerTrackDf: DataFrame;
+
+  dataPerDaySubject = new Subject<any>();
+  dataPerOriginSubject = new Subject<any>();
+  dataPerDestinationSubject = new Subject<any>();
+  dataPerTrackSubject = new Subject<any>();
+
   totalJourneys = 0;
   totalDays = 0;
   totalJourneysPerDay = 0;
@@ -59,25 +67,78 @@ export class CommunicationService {
       });
   }
 
-  // Get geographic info from ddbb for the viewer and graphics
-  getJourneysData() {
+  getInfoPerDay() {
     this.loading = true;
-    return this.http.get(`${globalConfig.serverUrl}/getJourneys`, { params: UtilsService.buildQueryParams(this.filterOptions) })
-      .pipe(map((journeys) => {
-        // this.journeys = journeys;
-        this.journeysDf = new DataFrame(journeys);
-        this.journeysDfSubject.next(Date.now());
-        this.totalJourneys = this.journeysDf.count();
+    return this.http.get(`${globalConfig.serverUrl}/getInfoPerDay`, { params: UtilsService.buildQueryParams(this.filterOptions) })
+      .pipe(map((res: Array<any>) => {
+        let info = res.map((elem) => {
+          return {
+            DIA: elem._id,
+            IMP_KM: elem.IMP_KM,
+            VIAJES_CONFIRMADOS: elem.VIAJES_CONFIRMADOS
+          };
+        });
 
-        // Grouping by Days
-        const groupedDF = this.journeysDf.groupBy('DIA')
-                                         .aggregate(group => group.stat.sum('VIAJES_CONFIRMADOS'))
-                                         .rename('aggregation', 'groupCount');
-        this.totalJourneysPerDay = groupedDF.stat.mean('groupCount').toFixed(2);
-        this.totalDays = groupedDF.count();
+        this.dataPerDayDf = new DataFrame(info);
+        this.dataPerDaySubject.next(Date.now());
+
+        this.totalJourneys = this.dataPerDayDf.stat.sum('VIAJES_CONFIRMADOS');
+        this.totalJourneysPerDay = this.dataPerDayDf.stat.mean('VIAJES_CONFIRMADOS').toFixed(2);
+        this.totalDays = this.dataPerDayDf.count();
 
         this.loading = false;
-        return this.journeysDf;
+      }));
+  }
+
+  getInfoPerTrack() {
+    return this.http.get(`${globalConfig.serverUrl}/getInfoPerTrack`, { params: UtilsService.buildQueryParams(this.filterOptions) })
+    .pipe(map((res: Array<any>) => {
+      let info = res.map((elem) => {
+        return {
+          ORIGEN_C: elem._id.ori,
+          DESTINO_C: elem._id.dest,
+          ORIGEN_P: elem.ORIGEN_P[0],
+          DESTINO_P: elem.DESTINO_P[0],
+          IMP_KM: elem.IMP_KM,
+          VIAJES_CONFIRMADOS: elem.VIAJES_CONFIRMADOS
+        };
+      });
+
+      this.dataPerTrackDf = new DataFrame(info);
+      this.dataPerTrackSubject.next(Date.now());
+
+      }));
+  }
+  getInfoPerOrigin() {
+    return this.http.get(`${globalConfig.serverUrl}/getInfoPerOrigin`, { params: UtilsService.buildQueryParams(this.filterOptions) })
+    .pipe(map((res: Array<any>) => {
+      let info = res.map((elem) => {
+        return {
+          ORIGEN_P: elem._id.ori,
+          IMP_KM: elem.IMP_KM,
+          VIAJES_CONFIRMADOS: elem.VIAJES_CONFIRMADOS
+        };
+      });
+
+      this.dataPerOriginDf = new DataFrame(info);
+      this.dataPerOriginSubject.next(Date.now());
+
+      }));
+  }
+  getInfoPerDestination() {
+    return this.http.get(`${globalConfig.serverUrl}/getInfoPerDestination`, { params: UtilsService.buildQueryParams(this.filterOptions) })
+    .pipe(map((res: Array<any>) => {
+      let info = res.map((elem) => {
+        return {
+          DESTINO_P: elem._id.dest,
+          IMP_KM: elem.IMP_KM,
+          VIAJES_CONFIRMADOS: elem.VIAJES_CONFIRMADOS
+        };
+      });
+
+      this.dataPerDestinationDf = new DataFrame(info);
+      this.dataPerDestinationSubject.next(Date.now());
+
       }));
   }
 
