@@ -262,7 +262,7 @@ export class GenMap extends OlMap {
                 let heatLayer = new HeatMapLayer({
                     title: 'Mapa de calor viajes',
                     name: 'journeysHeatMap',
-                    visible: false,
+                    visible: true,
                     source: heatVectorSources,
                     opacity: 0.8,
                     blur: 30,
@@ -276,7 +276,7 @@ export class GenMap extends OlMap {
                 let heatPriceLayer = new HeatMapLayer({
                     title: 'Mapa de calor precio',
                     name: 'journeysHeatMap',
-                    visible: true,
+                    visible: false,
                     source: heatVectorSources,
                     opacity: 0.8,
                     blur: 20,
