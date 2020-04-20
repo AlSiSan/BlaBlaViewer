@@ -23,7 +23,7 @@ export class UtilsService {
 })
 export class CommunicationService {
 
-  loading = true;
+  loading = [true, true, true, true];
   graphicsShown = false;
 
   filterOptions = {
@@ -68,7 +68,7 @@ export class CommunicationService {
   }
 
   getInfoPerDay() {
-    this.loading = true;
+    this.loading[0] = true;
     return this.http.get(`${globalConfig.serverUrl}/getInfoPerDay`, { params: UtilsService.buildQueryParams(this.filterOptions) })
       .pipe(map((res: Array<any>) => {
         let info = res.map((elem) => {
@@ -87,11 +87,12 @@ export class CommunicationService {
         this.totalJourneysPerDay = this.dataPerDayDf.stat.mean('VIAJES_CONFIRMADOS').toFixed(2);
         this.totalDays = this.dataPerDayDf.count();
 
-        this.loading = false;
+        this.loading[0] = false;
       }));
   }
 
   getInfoPerTrack() {
+    this.loading[1] = true;
     return this.http.get(`${globalConfig.serverUrl}/getInfoPerTrack`, { params: UtilsService.buildQueryParams(this.filterOptions) })
     .pipe(map((res: Array<any>) => {
       let info = res.map((elem) => {
@@ -108,10 +109,11 @@ export class CommunicationService {
 
       this.dataPerTrackDf = new DataFrame(info);
       this.dataPerTrackSubject.next(Date.now());
-
+      this.loading[1] = false;
       }));
   }
   getInfoPerOrigin() {
+    this.loading[2] = true;
     return this.http.get(`${globalConfig.serverUrl}/getInfoPerOrigin`, { params: UtilsService.buildQueryParams(this.filterOptions) })
     .pipe(map((res: Array<any>) => {
       let info = res.map((elem) => {
@@ -124,10 +126,11 @@ export class CommunicationService {
 
       this.dataPerOriginDf = new DataFrame(info);
       this.dataPerOriginSubject.next(Date.now());
-
+      this.loading[2] = false;
       }));
   }
   getInfoPerDestination() {
+    this.loading[3] = true;
     return this.http.get(`${globalConfig.serverUrl}/getInfoPerDestination`, { params: UtilsService.buildQueryParams(this.filterOptions) })
     .pipe(map((res: Array<any>) => {
       let info = res.map((elem) => {
@@ -140,12 +143,12 @@ export class CommunicationService {
 
       this.dataPerDestinationDf = new DataFrame(info);
       this.dataPerDestinationSubject.next(Date.now());
-
+      this.loading[3] = false;
       }));
   }
 
   loadFinished() {
-    return !this.loading;
+    return this.loading.every((val) => val === false);
   }
 
   getTotalJourneys() {

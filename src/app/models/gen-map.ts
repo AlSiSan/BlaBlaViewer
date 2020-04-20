@@ -184,8 +184,6 @@ export class GenMap extends OlMap {
             const dataPriceMean = data.stat.mean('IMP_KM') * 100;
             const dataNewOffersMean = data.stat.mean('OFERTANTES_NUEVOS');
 
-            data = data.filter(row => row.get('VIAJES_CONFIRMADOS') > (dataTrackMean / 4));
-
             // Generating geojson format
             const geoLines = {
                 type: 'FeatureCollection',
@@ -198,14 +196,19 @@ export class GenMap extends OlMap {
 
             // Generates the features for the layers
             data.toArray().forEach((line) => {
-                geoLines.features.push(
-                    turf.lineString([line[0].coordinates, line[1].coordinates], {journeys: line[2]})
-                );
                 geoHeat.features.push(
                     turf.point(line[0].coordinates, {price: line[4] * 100, journeys: line[5], newOffers: line[6]})
                 );
                 geoHeat.features.push(
                     turf.point(line[1].coordinates, {price: line[4] * 100, journeys: line[5], newOffers: line[6]})
+                );
+            });
+
+            data = data.filter(row => row.get('VIAJES_CONFIRMADOS') > (dataTrackMean / 3));
+            // Generates the features for the layers
+            data.toArray().forEach((line) => {
+                geoLines.features.push(
+                    turf.lineString([line[0].coordinates, line[1].coordinates], {journeys: line[2]})
                 );
             });
 
@@ -246,7 +249,7 @@ export class GenMap extends OlMap {
                 });
                 for (const element of this.getLayers()['array_']) {
                     if (element.values_.title === 'Datos') {
-                        journeysTrack.setZIndex(9);
+                        journeysTrack.setZIndex(7);
                         element.values_.layers.array_.push(journeysTrack);
                     }
                 }
@@ -348,9 +351,10 @@ export class GenMap extends OlMap {
                     visible: false,
                     source: clusterPrice,
                     style: (feature) => {
-                        let offersMean = feature.getProperties().features.reduce((acc, feature) => {
+                        let offersSum = feature.getProperties().features.reduce((acc, feature) => {
                             return acc + feature.getProperties().newOffers;
-                        }, 0) / feature.getProperties().features.length;
+                        }, 0);
+                        let offersMean = offersSum / feature.getProperties().features.length;
 
                         // Añade campo a la leyenda con estilo
                         if (!this.legendCache.newOffers) {
@@ -389,7 +393,7 @@ export class GenMap extends OlMap {
                                 })
                             }),
                             text: new Text({
-                                text: offersMean.toFixed(2),
+                                text: offersSum.toFixed(2),
                                 fill: new Fill({
                                     color: '#fff'
                                 })
@@ -397,12 +401,11 @@ export class GenMap extends OlMap {
                         }) : new Style({});
                     }
                 });
-    
 
                 // Adding heatmap layer to group Datos
                 for (const element of this.getLayers()['array_']) {
                     if (element.values_.title === 'Datos') {
-                        heatLayer.setZIndex(8);
+                        heatLayer.setZIndex(6);
                         element.values_.layers.array_.push(heatLayer);
                         heatPriceLayer.setZIndex(8);
                         element.values_.layers.array_.push(heatPriceLayer);

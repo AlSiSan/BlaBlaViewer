@@ -50,7 +50,7 @@ export class MapSidebarComponent implements OnInit {
 
   // check if there is communication for showing the graphics or not
   isLoaded() {
-    return !this.comm.loading;
+    return this.comm.loadFinished();
   }
 
   // shows the graphics
