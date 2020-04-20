@@ -40,7 +40,8 @@ export class GenMap extends OlMap {
         origenC: false,
         destinationC: false,
         journeysLines: false,
-        heatPrice: false
+        heatPrice: false,
+        newOffers: false
     };
 
     constructor( private comm: CommunicationService, opt? ) {
@@ -181,6 +182,7 @@ export class GenMap extends OlMap {
 
             const dataTrackMean = data.stat.mean('VIAJES_CONFIRMADOS');
             const dataPriceMean = data.stat.mean('IMP_KM') * 100;
+            const dataNewOffersMean = data.stat.mean('OFERTANTES_NUEVOS');
 
             data = data.filter(row => row.get('VIAJES_CONFIRMADOS') > (dataTrackMean / 4));
 
@@ -200,10 +202,10 @@ export class GenMap extends OlMap {
                     turf.lineString([line[0].coordinates, line[1].coordinates], {journeys: line[2]})
                 );
                 geoHeat.features.push(
-                    turf.point(line[0].coordinates, {price: line[4] * 100, journeys: line[5]})
+                    turf.point(line[0].coordinates, {price: line[4] * 100, journeys: line[5], newOffers: line[6]})
                 );
                 geoHeat.features.push(
-                    turf.point(line[1].coordinates, {price: line[4] * 100, journeys: line[5]})
+                    turf.point(line[1].coordinates, {price: line[4] * 100, journeys: line[5], newOffers: line[6]})
                 );
             });
 
@@ -306,7 +308,7 @@ export class GenMap extends OlMap {
                                         color: '#fff'
                                     }),
                                     fill: new Fill({
-                                        color: '#ffff44'
+                                        color: '#ff0000'
                                     }),
                                     angle: 0
                                 })
@@ -316,6 +318,8 @@ export class GenMap extends OlMap {
                             this.legend.addRow({ title: 'Precio (cents. € / km)', feature: featureCloneStyle });
                         }
 
+                        // Si el precio es superior a la media del dataframe, muestra un triangulo rojo hacia arriba
+                        // si es inferior, un triangulo verde hacia abajo
                         return new Style({
                             image: new RegularShape({
                                 points: 3,
@@ -337,6 +341,62 @@ export class GenMap extends OlMap {
                         });
                     }
                 });
+
+                let newOffersLayer = new GenVectorLayer({
+                    title: 'Ofertantes nuevos',
+                    name: 'newOffersMap',
+                    visible: false,
+                    source: clusterPrice,
+                    style: (feature) => {
+                        let offersMean = feature.getProperties().features.reduce((acc, feature) => {
+                            return acc + feature.getProperties().newOffers;
+                        }, 0) / feature.getProperties().features.length;
+
+                        // Añade campo a la leyenda con estilo
+                        if (!this.legendCache.newOffers) {
+                            this.legendCache.newOffers = true;
+                            const legendStyle = new Style({
+                                image: new RegularShape({
+                                    points: 3,
+                                    radius: 15,
+                                    rotation: 0,
+                                    stroke: new Stroke({
+                                        color: '#fff'
+                                    }),
+                                    fill: new Fill({
+                                        color: '#aaaa00'
+                                    }),
+                                    angle: 0
+                                })
+                            });
+                            const featureCloneStyle = feature.clone();
+                            featureCloneStyle.setStyle(legendStyle);
+                            this.legend.addRow({ title: 'Ofertantes nuevos', feature: featureCloneStyle });
+                        }
+
+                        // Si el numero de ofertantes nuevos es superior a la media lo muestra,
+                        // indicando que hay crecimiento
+                        return offersMean > dataNewOffersMean ? new Style({
+                            image: new RegularShape({
+                                points: 3,
+                                radius: 25,
+                                rotation: 0,
+                                stroke: new Stroke({
+                                    color: '#fff'
+                                }),
+                                fill: new Fill({
+                                    color: '#aaaa00'
+                                })
+                            }),
+                            text: new Text({
+                                text: offersMean.toFixed(2),
+                                fill: new Fill({
+                                    color: '#fff'
+                                })
+                            })
+                        }) : new Style({});
+                    }
+                });
     
 
                 // Adding heatmap layer to group Datos
@@ -346,6 +406,8 @@ export class GenMap extends OlMap {
                         element.values_.layers.array_.push(heatLayer);
                         heatPriceLayer.setZIndex(8);
                         element.values_.layers.array_.push(heatPriceLayer);
+                        newOffersLayer.setZIndex(9);
+                        element.values_.layers.array_.push(newOffersLayer);
                     }
                 }
                 new Promise(r => setTimeout(r, 800)).then(() => {

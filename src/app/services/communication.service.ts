@@ -75,7 +75,8 @@ export class CommunicationService {
           return {
             DIA: elem._id,
             IMP_KM: elem.IMP_KM,
-            VIAJES_CONFIRMADOS: elem.VIAJES_CONFIRMADOS
+            VIAJES_CONFIRMADOS: elem.VIAJES_CONFIRMADOS,
+            OFERTANTES_NUEVOS: elem.OFERTANTES_NUEVOS
           };
         });
 
@@ -100,7 +101,8 @@ export class CommunicationService {
           ORIGEN_P: elem.ORIGEN_P[0],
           DESTINO_P: elem.DESTINO_P[0],
           IMP_KM: elem.IMP_KM,
-          VIAJES_CONFIRMADOS: elem.VIAJES_CONFIRMADOS
+          VIAJES_CONFIRMADOS: elem.VIAJES_CONFIRMADOS,
+          OFERTANTES_NUEVOS: elem.OFERTANTES_NUEVOS
         };
       });
 
