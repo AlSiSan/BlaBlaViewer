@@ -189,27 +189,32 @@ export class GenMap extends OlMap {
                 type: 'FeatureCollection',
                 features: []
             };
-            const geoHeat = {
+            const geoHeatJourneys = {
+                type: 'FeatureCollection',
+                features: []
+            };
+            const geoHeatPriceOffers = {
                 type: 'FeatureCollection',
                 features: []
             };
 
+            const journeysDiscriminator = (dataTrackMean / 1.5 * (this.comm.totalDays / 30));
             // Generates the features for the layers
             data.toArray().forEach((line) => {
-                geoHeat.features.push(
-                    turf.point(line[0].coordinates, {price: line[4] * 100, journeys: line[5], newOffers: line[6]})
+                geoHeatPriceOffers.features.push(
+                    turf.point(line[0].coordinates, {price: line[4] * 100, newOffers: line[6]})
                 );
-                geoHeat.features.push(
-                    turf.point(line[1].coordinates, {price: line[4] * 100, journeys: line[5], newOffers: line[6]})
-                );
-            });
-
-            data = data.filter(row => row.get('VIAJES_CONFIRMADOS') > (dataTrackMean / 3));
-            // Generates the features for the layers
-            data.toArray().forEach((line) => {
-                geoLines.features.push(
-                    turf.lineString([line[0].coordinates, line[1].coordinates], {journeys: line[2]})
-                );
+                if (line[5] > journeysDiscriminator) {
+                    geoHeatJourneys.features.push(
+                        turf.point(line[0].coordinates, {journeys: line[5]})
+                    );
+                    geoHeatJourneys.features.push(
+                        turf.point(line[1].coordinates, {journeys: line[5]})
+                    );
+                    geoLines.features.push(
+                        turf.lineString([line[0].coordinates, line[1].coordinates], {journeys: line[2]})
+                    );
+                }
             });
 
             new Promise(r => setTimeout(r, 1)).then(() => {
@@ -260,16 +265,16 @@ export class GenMap extends OlMap {
             new Promise(r => setTimeout(r, 1)).then(() => {
                 // Generating heatMaps points
                 const heatVectorSources = new OlVectorSource({
-                    features: new OlGeoJSON().readFeatures(geoHeat, {
+                    features: new OlGeoJSON().readFeatures(geoHeatJourneys, {
                         featureProjection: 'EPSG:3857'
                     })
                 });
 
                 // Generating Cluster
-                const clusterPrice = new Cluster({
-                    distance: 30,
+                const clusterPriceOffers = new Cluster({
+                    distance: 80,
                     source: new OlVectorSource({
-                        features: new OlGeoJSON().readFeatures(geoHeat, {
+                        features: new OlGeoJSON().readFeatures(geoHeatPriceOffers, {
                             featureProjection: 'EPSG:3857'
                         })
                     })
@@ -293,7 +298,7 @@ export class GenMap extends OlMap {
                     title: 'Mapa de calor precio',
                     name: 'journeysHeatMap',
                     visible: true,
-                    source: clusterPrice,
+                    source: clusterPriceOffers,
                     style: (feature) => {
                         let priceMean = feature.getProperties().features.reduce((acc, feature) => {
                             return acc + feature.getProperties().price;
@@ -318,7 +323,10 @@ export class GenMap extends OlMap {
                             });
                             const featureCloneStyle = feature.clone();
                             featureCloneStyle.setStyle(legendStyle);
-                            this.legend.addRow({ title: 'Precio (cents. € / km)', feature: featureCloneStyle });
+                            this.legend.addRow({ 
+                                title: 'Precio (cents. € / km)<br><i class="fa fa-caret-up" style="color:red"></i> más alto. <i class="fa fa-caret-down" style="color:#00aa00"></i> más bajo.', 
+                                feature: featureCloneStyle
+                            });
                         }
 
                         // Si el precio es superior a la media del dataframe, muestra un triangulo rojo hacia arriba
@@ -349,7 +357,7 @@ export class GenMap extends OlMap {
                     title: 'Ofertantes nuevos',
                     name: 'newOffersMap',
                     visible: false,
-                    source: clusterPrice,
+                    source: clusterPriceOffers,
                     style: (feature) => {
                         let offersSum = feature.getProperties().features.reduce((acc, feature) => {
                             return acc + feature.getProperties().newOffers;
@@ -375,7 +383,7 @@ export class GenMap extends OlMap {
                             });
                             const featureCloneStyle = feature.clone();
                             featureCloneStyle.setStyle(legendStyle);
-                            this.legend.addRow({ title: 'Ofertantes nuevos', feature: featureCloneStyle });
+                            this.legend.addRow({ title: 'Zonas de crecimiento <br>(ofertantes nuevos)', feature: featureCloneStyle });
                         }
 
                         // Si el numero de ofertantes nuevos es superior a la media lo muestra,
@@ -393,7 +401,7 @@ export class GenMap extends OlMap {
                                 })
                             }),
                             text: new Text({
-                                text: offersSum.toFixed(2),
+                                text: String(offersSum),
                                 fill: new Fill({
                                     color: '#fff'
                                 })
@@ -442,7 +450,7 @@ export class GenMap extends OlMap {
 
             // Generating Cluster with polygons points
             const clusterSource = new Cluster({
-                distance: 60,
+                distance: 100,
                 source: new OlVectorSource({
                     features: new OlGeoJSON().readFeatures(geoPoints, {
                         featureProjection: 'EPSG:3857'
@@ -488,7 +496,7 @@ export class GenMap extends OlMap {
                         }
                         style = new Style({
                             image: new CircleStyle({
-                                radius: (journeysNum > 10000 ? 50 : journeysNum > 1000 ? 30 : 10) * size,
+                                radius: (journeysNum > 20000 ? 40 : journeysNum > 2000 ? 30 : 10) * size,
                                 stroke: new Stroke({
                                     color: '#fff'
                                 }),
@@ -541,7 +549,7 @@ export class GenMap extends OlMap {
 
             // Generating Cluster with polygons points
             const clusterSource = new Cluster({
-                distance: 60,
+                distance: 100,
                 source: new OlVectorSource({
                     features: new OlGeoJSON().readFeatures(geoPoints, {
                         featureProjection: 'EPSG:3857'
@@ -587,7 +595,7 @@ export class GenMap extends OlMap {
 
                         style = new Style({
                             image: new CircleStyle({
-                                radius: (journeysNum > 10000 ? 50 : journeysNum > 1000 ? 30 : 10) * size,
+                                radius: (journeysNum > 20000 ? 40 : journeysNum > 2000 ? 30 : 10) * size,
                                 stroke: new Stroke({
                                     color: '#fff'
                                 }),
