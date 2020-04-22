@@ -192,7 +192,7 @@ export class GraphicsModalComponent implements OnInit {
       plugins: [
         Chartist.plugins.ctAxisTitle({
           axisX: {
-            axisTitle: 'Viajes',
+            axisTitle: 'Nuevos ofertantes',
             axisClass: 'ct-axis-title',
             offset: {
               x: 0,
